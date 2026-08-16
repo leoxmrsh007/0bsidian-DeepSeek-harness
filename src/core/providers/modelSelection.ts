@@ -6,6 +6,7 @@ const PROVIDER_MODEL_SELECTION_PREFIXES: Partial<Record<ProviderId, string>> = {
   grok: 'grok/',
   opencode: 'opencode/',
   pi: 'pi/',
+  deepseek: 'deepseek/',
 };
 
 export interface ProviderModelSelection {

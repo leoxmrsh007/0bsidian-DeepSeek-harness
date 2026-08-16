@@ -155,6 +155,18 @@ const allowedProviderAppImports = new Set([
     path.join(providersRoot, 'claude', 'storage', 'ClaudianSettingsStorage.ts'),
     path.join(appRoot, 'settings', 'ClaudianSettingsStorage'),
   ),
+  resolvedImportKey(
+    path.join(providersRoot, 'deepseek', 'types', 'settings.ts'),
+    path.join(appRoot, 'settings', 'defaultSettings'),
+  ),
+  resolvedImportKey(
+    path.join(providersRoot, 'deepseek', 'storage', 'StorageService.ts'),
+    path.join(appRoot, 'settings', 'ClaudianSettingsStorage'),
+  ),
+  resolvedImportKey(
+    path.join(providersRoot, 'deepseek', 'storage', 'ClaudianSettingsStorage.ts'),
+    path.join(appRoot, 'settings', 'ClaudianSettingsStorage'),
+  ),
 ]);
 
 test('concrete provider pattern covers every registered provider directory', () => {

@@ -2251,7 +2251,7 @@ describe('ClaudianPlugin', () => {
       const invalidated = await plugin.getConversationById(invalidatedConversation.id);
       expect(stagePendingSpy).toHaveBeenCalledWith(
         expect.anything(),
-        ['codex'],
+        ['codex', 'deepseek'],
       );
       expect(stagePendingSpy).toHaveBeenCalledTimes(1);
       expect(preserved).toEqual(expect.objectContaining({
