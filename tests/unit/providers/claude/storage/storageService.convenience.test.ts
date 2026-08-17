@@ -86,9 +86,9 @@ describe('StorageService convenience methods', () => {
       await storage.initialize();
 
       const perms = await storage.getPermissions();
-      // eslint-disable-next-line no-console
+       
       console.log("DBG exists:", await (storage.getAdapter() as any).exists('.claude/settings.json'));
-      // eslint-disable-next-line no-console
+       
       console.log("DBG perms:", JSON.stringify(perms));
       expect(perms.allow).toContainEqual('Bash(git *)');
       expect(perms.deny).toContainEqual('Bash(rm -rf)');
@@ -229,7 +229,7 @@ describe('StorageService convenience methods', () => {
     it('migrates legacy settings into .deepseek-harness during initialization', async () => {
       const { plugin, files } = createMockPlugin({
         initialFiles: {
-          '.claude/settings.json': claudianSettingsJson,
+          '.claude/claudian-settings.json': claudianSettingsJson,
         },
       });
       const storage = new StorageService(plugin);
@@ -237,7 +237,7 @@ describe('StorageService convenience methods', () => {
       await storage.initialize();
 
       expect(files.get('.deepseek-harness/settings.json')).toBeDefined();
-      expect(files.has('.claude/settings.json')).toBe(false);
+      expect(files.has('.claude/claudian-settings.json')).toBe(false);
     });
   });
 

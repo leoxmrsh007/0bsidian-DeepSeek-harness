@@ -1,6 +1,6 @@
+import type { IncomingMessage } from 'node:http';
 import { request as httpRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
-import type { IncomingMessage } from 'node:http';
 
 /**
  * Minimal Node http(s) request helper for the DeepSeek Harness local RPC API.
@@ -56,7 +56,7 @@ export function nodeHttpRequest(
       (res: IncomingMessage) => {
         const chunks: Buffer[] = [];
         res.on('data', (chunk) => {
-          chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+          chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as string));
         });
         res.on('end', () => {
           const text = Buffer.concat(chunks).toString('utf8');

@@ -1,6 +1,6 @@
 import { BUILT_IN_PROVIDER_MODULES } from '@/providers';
-import { getBuiltInProviderDefaultConfigs } from '@/providers/defaultProviderConfigs';
 import { getDeepSeekProviderSettings } from '@/providers/deepseek/settings';
+import { getBuiltInProviderDefaultConfigs } from '@/providers/defaultProviderConfigs';
 
 function getProviderConfig(
   settings: Record<string, unknown>,
