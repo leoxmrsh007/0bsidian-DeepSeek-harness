@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
-describe('Claudian view container styles', () => {
+describe('DeepSeek Harness view container styles', () => {
   it('preserves Obsidian host spacing outside the left sidebar', () => {
     const css = readFileSync(path.resolve('src/style/base/container.css'), 'utf8');
 

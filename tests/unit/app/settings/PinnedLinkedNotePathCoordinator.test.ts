@@ -1,11 +1,11 @@
 import { PinnedLinkedNotePathCoordinator } from '@/app/settings/PinnedLinkedNotePathCoordinator';
 import { SettingsCoordinator } from '@/app/settings/SettingsCoordinator';
-import type { ClaudianSettings } from '@/core/types';
+import type { DeepSeekHarnessSettings } from '@/core/types';
 
 function createFixture(initialPaths: string[] = []) {
   const settings = {
     pinnedLinkedNotePaths: [...initialPaths],
-  } as ClaudianSettings;
+  } as DeepSeekHarnessSettings;
   const persist = jest.fn().mockResolvedValue(undefined);
   const coordinator = new SettingsCoordinator(settings, persist);
   return {

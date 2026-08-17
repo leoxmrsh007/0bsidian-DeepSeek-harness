@@ -1,9 +1,9 @@
-interface ClaudeModelVersion {
+interface DeepSeekModelVersion {
   major: number;
   minor: number;
 }
 
-export const CLAUDE_MODEL_TIER_DEFINITIONS = [
+export const DEEPSEEK_MODEL_TIER_DEFINITIONS = [
   {
     id: 'deepseek-v4-flash',
     label: 'DeepSeek V4 Flash',
@@ -36,30 +36,30 @@ export const CLAUDE_MODEL_TIER_DEFINITIONS = [
   },
 ] as const;
 
-export type ClaudeModelTier = typeof CLAUDE_MODEL_TIER_DEFINITIONS[number]['id'];
-export type ClaudeModelEnvironmentType = 'model' | ClaudeModelTier;
-export type ClaudeModelTierDefinition = typeof CLAUDE_MODEL_TIER_DEFINITIONS[number];
-export type ClaudeModelTierEnvironmentKey = ClaudeModelTierDefinition['environmentKey'];
+export type DeepSeekModelTier = typeof DEEPSEEK_MODEL_TIER_DEFINITIONS[number]['id'];
+export type DeepSeekModelEnvironmentType = 'model' | DeepSeekModelTier;
+export type DeepSeekModelTierDefinition = typeof DEEPSEEK_MODEL_TIER_DEFINITIONS[number];
+export type DeepSeekModelTierEnvironmentKey = DeepSeekModelTierDefinition['environmentKey'];
 
-export const CLAUDE_MODEL_TIER_PATTERN = CLAUDE_MODEL_TIER_DEFINITIONS
+export const DEEPSEEK_MODEL_TIER_PATTERN = DEEPSEEK_MODEL_TIER_DEFINITIONS
   .map(definition => definition.id)
   .join('|');
 
-export function isClaudeModelTier(value: string): value is ClaudeModelTier {
-  return CLAUDE_MODEL_TIER_DEFINITIONS.some(definition => definition.id === value);
+export function isDeepSeekModelTier(value: string): value is DeepSeekModelTier {
+  return DEEPSEEK_MODEL_TIER_DEFINITIONS.some(definition => definition.id === value);
 }
 
-export function isClaudeModelEnvironmentType(value: string): value is ClaudeModelEnvironmentType {
-  return value === 'model' || isClaudeModelTier(value);
+export function isDeepSeekModelEnvironmentType(value: string): value is DeepSeekModelEnvironmentType {
+  return value === 'model' || isDeepSeekModelTier(value);
 }
 
-export function getClaudeModelTierDefinition(tier: ClaudeModelTier): ClaudeModelTierDefinition {
-  return CLAUDE_MODEL_TIER_DEFINITIONS.find(definition => definition.id === tier)!;
+export function getDeepSeekModelTierDefinition(tier: DeepSeekModelTier): DeepSeekModelTierDefinition {
+  return DEEPSEEK_MODEL_TIER_DEFINITIONS.find(definition => definition.id === tier)!;
 }
 
-export function resolveClaudeModelTierAlias(value: string): ClaudeModelTier | null {
+export function resolveDeepSeekModelTierAlias(value: string): DeepSeekModelTier | null {
   const normalized = value.trim().toLowerCase();
-  const definition = CLAUDE_MODEL_TIER_DEFINITIONS.find(candidate =>
+  const definition = DEEPSEEK_MODEL_TIER_DEFINITIONS.find(candidate =>
     candidate.id === normalized
     || (candidate.legacyAliases as readonly string[]).includes(normalized)
   );
@@ -69,7 +69,7 @@ export function resolveClaudeModelTierAlias(value: string): ClaudeModelTier | nu
 export function isVersionAtLeast(
   major: number,
   minor: number,
-  minimum: ClaudeModelVersion | null,
+  minimum: DeepSeekModelVersion | null,
 ): boolean {
   if (!minimum) {
     return false;

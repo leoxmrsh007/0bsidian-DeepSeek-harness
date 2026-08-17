@@ -1,5 +1,5 @@
 /**
- * Claudian - Instruction modal
+ * DeepSeek Harness - Instruction modal
  *
  * Unified modal that handles all instruction mode states:
  * - Loading (initial processing)

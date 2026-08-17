@@ -3,7 +3,7 @@ import { Menu, Notice, Platform, Scope, setIcon, TFile } from 'obsidian';
 
 import { ProviderRegistry } from '@/core/providers/ProviderRegistry';
 import { ProviderSettingsCoordinator } from '@/core/providers/ProviderSettingsCoordinator';
-import { ClaudianView } from '@/features/chat/ClaudianView';
+import { DeepSeekHarnessView } from '@/features/chat/DeepSeekHarnessView';
 import { HorizontalWheelGesture } from '@/features/chat/ui/HorizontalWheelGesture';
 
 const mockTabManagerConstructor = jest.fn();
@@ -82,7 +82,7 @@ function createBlankModelRefreshTab(providerId: 'codex' | 'grok') {
   };
 }
 
-describe('ClaudianView model refresh routing', () => {
+describe('DeepSeekHarnessView model refresh routing', () => {
   afterEach(() => {
     jest.restoreAllMocks();
   });
@@ -113,7 +113,7 @@ describe('ClaudianView model refresh routing', () => {
     const grokTab = createModelRefreshTab('grok');
     const blankGrokTab = createBlankModelRefreshTab('grok');
     const primeProviderExecution = jest.fn();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     view.plugin = {
       getConversationSync: jest.fn().mockReturnValue(null),
       providerHost: {},
@@ -149,7 +149,7 @@ function createViewHarness(options: {
 } {
   const newTabButtonEl = createMockEl();
   const sessionNewButtonEl = createMockEl();
-  const view = Object.create(ClaudianView.prototype) as any;
+  const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
   view.plugin = {
     settings: {},
@@ -166,12 +166,12 @@ function createViewHarness(options: {
   return { newTabButtonEl, sessionNewButtonEl, view };
 }
 
-describe('ClaudianView tab controls', () => {
+describe('DeepSeekHarnessView tab controls', () => {
   it('focuses the composer after creating a new tab', async () => {
     const inputEl = createMockEl('textarea') as unknown as HTMLTextAreaElement;
     inputEl.focus = jest.fn();
     const tab = { dom: { inputEl } };
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     view.plugin = { settings: {} };
     view.tabManager = {
@@ -194,7 +194,7 @@ describe('ClaudianView tab controls', () => {
     const existingLeaf = { view: { file: note } };
     const previousDraftHandleFileOpen = jest.fn();
     const linkedDraftHandleFileOpen = jest.fn();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     const revealLeaf = jest.fn().mockImplementation(async () => {
       view.handleWorkspaceFileOpen(note);
     });
@@ -286,7 +286,7 @@ describe('ClaudianView tab controls', () => {
         ui: { fileContextManager: { resetForNewConversation, setCurrentNote } },
       };
     });
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       isArchiveSessionView: false,
       plugin: {
@@ -342,7 +342,7 @@ describe('ClaudianView tab controls', () => {
     });
     const activeTabId = 'initial-tab';
     let tabSwitchRequestRevision = 0;
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       isArchiveSessionView: false,
       linkedNoteNavigationDepth: 0,
@@ -431,7 +431,7 @@ describe('ClaudianView tab controls', () => {
     const header = list.createDiv({
       cls: 'claudian-history-header claudian-session-list-header',
     });
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     Object.assign(view, {
       plugin: { settings: {} },
@@ -484,7 +484,7 @@ describe('ClaudianView tab controls', () => {
       });
       return container;
     };
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       isArchiveSessionView: false,
       isWideSessionLayout: true,
@@ -526,7 +526,7 @@ describe('ClaudianView tab controls', () => {
     list.createDiv({
       cls: 'claudian-history-header claudian-session-list-header',
     });
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       closeSessionSearch: jest.fn(),
       isArchiveSessionView: false,
@@ -588,7 +588,7 @@ describe('ClaudianView tab controls', () => {
     const sessionList = list.createDiv({ cls: 'claudian-session-list-items' });
     pinnedList.scrollTop = 40;
     sessionList.scrollTop = 160;
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     view.sessionSidebarEl = sessionSidebarEl;
 
     view.sessionSearchRestoreState = view.captureSessionSearchScrollState();
@@ -607,7 +607,7 @@ describe('ClaudianView tab controls', () => {
       cls: 'claudian-history-header claudian-session-list-header',
     });
     const documentListeners = new Map<string, (event: Event) => void>();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       closeSessionSearch: jest.fn(),
       isArchiveSessionView: false,
@@ -652,7 +652,7 @@ describe('ClaudianView tab controls', () => {
     const list = container.createDiv({ cls: 'claudian-history-list' });
     list.createDiv({ cls: 'claudian-history-item' });
     const setArchiveSessionView = jest.fn();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       isArchiveSessionView: false,
       setArchiveSessionView,
@@ -682,7 +682,7 @@ describe('ClaudianView tab controls', () => {
     container.ownerDocument.defaultView.requestAnimationFrame = ownerRequestAnimationFrame;
     const globalRequestAnimationFrame = jest.spyOn(window, 'requestAnimationFrame');
     const renderHistoryDropdown = jest.fn();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       isArchiveSessionView: false,
       historyDropdown: container,
@@ -732,7 +732,7 @@ describe('ClaudianView tab controls', () => {
     list.createDiv({
       cls: 'claudian-history-header claudian-session-list-header',
     });
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     const renderSessionSidebar = jest.fn();
     Object.assign(view, {
       collapsedSessionGroupKeys: new Set<string>(),
@@ -799,7 +799,7 @@ describe('ClaudianView tab controls', () => {
     const inputEl = createMockEl('textarea') as unknown as HTMLTextAreaElement;
     inputEl.focus = jest.fn();
     const draftTab = { id: 'draft-1', conversationId: null, dom: { inputEl } };
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     view.createNewTab = jest.fn();
     view.tabManager = {
@@ -823,7 +823,7 @@ describe('ClaudianView tab controls', () => {
     const activeTab = { id: 'tab-1', conversationId: 'conversation-1' };
     const firstDraft = { id: 'draft-1', conversationId: null, dom: { inputEl: firstInputEl } };
     const latestDraft = { id: 'draft-2', conversationId: null, dom: { inputEl: latestInputEl } };
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     view.createNewTab = jest.fn();
     view.tabManager = {
@@ -842,7 +842,7 @@ describe('ClaudianView tab controls', () => {
 
   it('creates an unbound tab when dual mode has no draft to resume', async () => {
     const activeTab = { id: 'tab-1', conversationId: 'conversation-1' };
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     view.createNewTab = jest.fn().mockResolvedValue(undefined);
     view.tabManager = {
@@ -856,7 +856,7 @@ describe('ClaudianView tab controls', () => {
   });
 
   it('handles a New conversation command with the dual-mode New action', async () => {
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     view.activateOrCreateDraftTab = jest.fn().mockResolvedValue(undefined);
     view.isWideSessionLayout = true;
 
@@ -866,7 +866,7 @@ describe('ClaudianView tab controls', () => {
   });
 
   it('leaves a New conversation command to the current tab in single mode', async () => {
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     view.activateOrCreateDraftTab = jest.fn().mockResolvedValue(undefined);
     view.isWideSessionLayout = false;
 
@@ -880,7 +880,7 @@ describe('ClaudianView tab controls', () => {
     const targetTab = {
       controllers: { inputController: { sendMessage } },
     };
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     view.isWideSessionLayout = true;
     view.createNewTab = jest.fn().mockResolvedValue(targetTab);
     view.tabManager = { getActiveTab: jest.fn().mockReturnValue(targetTab) };
@@ -904,7 +904,7 @@ describe('ClaudianView tab controls', () => {
       session: { userOwnershipRevision: 0 },
     };
     const discardTab = jest.fn().mockResolvedValue(true);
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     let sourceIsLive = true;
     view.isWideSessionLayout = true;
     view.createNewTab = jest.fn(() => tabCreation);
@@ -935,7 +935,7 @@ describe('ClaudianView tab controls', () => {
       session: { userOwnershipRevision: 1 },
     };
     const discardTab = jest.fn().mockResolvedValue(true);
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     let sourceIsLive = true;
     view.isWideSessionLayout = true;
     view.createNewTab = jest.fn(() => tabCreation.promise);
@@ -957,7 +957,7 @@ describe('ClaudianView tab controls', () => {
   });
 
   it('leaves approved-plan session replacement unchanged in single mode', async () => {
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     view.isWideSessionLayout = false;
     view.createNewTab = jest.fn().mockResolvedValue(undefined);
 
@@ -969,7 +969,7 @@ describe('ClaudianView tab controls', () => {
   it('keeps tab controls in the view-owned input row', () => {
     const navRowContent = createMockEl();
     const inputNavRowHostEl = createMockEl();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     view.containerEl = createMockEl();
     view.navRowContent = navRowContent;
@@ -1004,7 +1004,7 @@ describe('ClaudianView tab controls', () => {
         inputContainerEl: createMockEl(),
       },
     };
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     view.activeInputSlotEl = activeInputSlotEl;
     view.tabManager = {
@@ -1034,7 +1034,7 @@ describe('ClaudianView tab controls', () => {
         inputContainerEl: inputComposerEl.createDiv({ cls: 'claudian-input-container' }),
       },
     };
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     Object.defineProperty(inputComposerEl, 'parentElement', {
       configurable: true,
@@ -1056,7 +1056,7 @@ describe('ClaudianView tab controls', () => {
   it('clears the stable input slot when no tab is active', () => {
     const activeInputSlotEl = createMockEl();
     const staleInputEl = activeInputSlotEl.createDiv();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     view.activeInputTabId = 'tab-1';
     view.activeInputSlotEl = activeInputSlotEl;
@@ -1072,7 +1072,7 @@ describe('ClaudianView tab controls', () => {
 
   it('toggles the history dropdown when the history button is clicked', () => {
     const historyDropdown = createMockEl();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     view.historyDropdown = historyDropdown;
     view.tabManager = {
@@ -1098,7 +1098,7 @@ describe('ClaudianView tab controls', () => {
       (_options as { onBeforeRestoreListState?: (target: HTMLElement) => void })
         ?.onBeforeRestoreListState?.(container);
     });
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       historyDropdown,
       historyDropdownDirty: true,
@@ -1147,7 +1147,7 @@ describe('ClaudianView tab controls', () => {
   it('defers hidden history rendering and coalesces invalidations until the dropdown opens', () => {
     const historyDropdown = createMockEl();
     const renderHistoryDropdown = jest.fn();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     view.historyDropdown = historyDropdown;
     view.historyDropdownDirty = true;
@@ -1192,7 +1192,7 @@ describe('ClaudianView tab controls', () => {
 
   it('builds the persistent session column to the right of the chat panel', () => {
     const viewContainerEl = createMockEl();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     view.viewContainerEl = viewContainerEl;
 
@@ -1227,7 +1227,7 @@ describe('ClaudianView tab controls', () => {
     const destroy = jest.fn();
     const setActive = jest.fn();
     const renderSessionSidebar = jest.fn();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     Object.assign(view, {
       activeSidebarSurface: 'sessions',
@@ -1269,7 +1269,7 @@ describe('ClaudianView tab controls', () => {
     const viewContainerEl = createMockEl();
     const mount = jest.fn().mockResolvedValue(undefined);
     const setActive = jest.fn();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     Object.assign(view, {
       activeSidebarSurface: 'sessions',
@@ -1381,7 +1381,7 @@ describe('ClaudianView tab controls', () => {
 
   it('hides the surface switcher when the file pane is disabled', () => {
     const viewContainerEl = createMockEl();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     Object.assign(view, {
       activeSidebarSurface: 'sessions',
@@ -1398,7 +1398,7 @@ describe('ClaudianView tab controls', () => {
   it('returns to Sessions and tears down the tree when the file pane is disabled', () => {
     const viewContainerEl = createMockEl();
     const destroy = jest.fn();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     Object.assign(view, {
       activeSidebarSurface: 'files',
@@ -1424,7 +1424,7 @@ describe('ClaudianView tab controls', () => {
     const viewContainerEl = createMockEl();
     const historyDropdown = createMockEl();
     historyDropdown.addClass('visible');
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     Object.assign(view, {
       cancelHistoryRendering: jest.fn(),
@@ -1445,7 +1445,7 @@ describe('ClaudianView tab controls', () => {
 
   it('keeps the single-panel layout when dual-pane mode is disabled', () => {
     const viewContainerEl = createMockEl();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     Object.assign(view, {
       isWideSessionLayout: false,
@@ -1464,7 +1464,7 @@ describe('ClaudianView tab controls', () => {
 
   it('attaches the persistent session column to the configured left side', () => {
     const viewContainerEl = createMockEl();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     Object.assign(view, {
       cancelHistoryRendering: jest.fn(),
@@ -1485,7 +1485,7 @@ describe('ClaudianView tab controls', () => {
   it('keeps dual-mode controls in place until provisional cleanup finishes', async () => {
     const viewContainerEl = createMockEl();
     viewContainerEl.addClass('claudian-wide-session-layout');
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     let finishDiscard!: () => void;
     const discardProvisionalTabs = jest.fn().mockReturnValue(new Promise<void>((resolve) => {
       finishDiscard = resolve;
@@ -1541,7 +1541,7 @@ describe('ClaudianView tab controls', () => {
     const discardProvisionalTabs = jest.fn().mockReturnValue(new Promise<void>((resolve) => {
       finishDiscard = resolve;
     }));
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       cancelHistoryRendering: jest.fn(),
       cancelSessionSidebarRendering: jest.fn(),
@@ -1572,7 +1572,7 @@ describe('ClaudianView tab controls', () => {
   it('retains pinned provisional sessions when returning to single mode', () => {
     const viewContainerEl = createMockEl();
     viewContainerEl.addClass('claudian-wide-session-layout');
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     const pinnedTab = {
       id: 'pinned-tab',
       conversationId: 'pinned-conversation',
@@ -1617,7 +1617,7 @@ describe('ClaudianView tab controls', () => {
       session: createOwnershipSession(),
     };
     const setConversationPinned = jest.fn().mockResolvedValue(undefined);
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       plugin: { setConversationPinned },
       tabManager: { getAllTabs: jest.fn().mockReturnValue([openTab]) },
@@ -1655,7 +1655,7 @@ describe('ClaudianView tab controls', () => {
     };
     const otherView = { getTabManager: jest.fn().mockReturnValue(otherManager) };
     const setConversationArchived = jest.fn().mockResolvedValue(undefined);
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       plugin: {
         getAllViews: jest.fn().mockReturnValue([view, otherView]),
@@ -1685,7 +1685,7 @@ describe('ClaudianView tab controls', () => {
       getAllTabs: jest.fn().mockReturnValue([runningTab]),
     };
     const setConversationArchived = jest.fn().mockResolvedValue(undefined);
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       plugin: {
         getAllViews: jest.fn().mockReturnValue([view]),
@@ -1709,7 +1709,7 @@ describe('ClaudianView tab controls', () => {
       getAllTabs: jest.fn().mockReturnValue([]),
       openConversation: jest.fn(),
     };
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       plugin: { setConversationArchived },
       tabManager: manager,
@@ -1737,7 +1737,7 @@ describe('ClaudianView tab controls', () => {
         documentListeners.delete(event);
       }),
     };
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     Object.assign(view, {
       isWideSessionLayout: true,
@@ -1786,7 +1786,7 @@ describe('ClaudianView tab controls', () => {
         documentListeners.delete(event);
       }),
     };
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     Object.assign(view, {
       isWideSessionLayout: true,
@@ -1816,7 +1816,7 @@ describe('ClaudianView tab controls', () => {
     const viewContainerEl = createMockEl();
     viewContainerEl.getBoundingClientRect = jest.fn().mockReturnValue({ width: 700 });
     viewContainerEl.style.setProperty = jest.fn();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     Object.assign(view, {
       viewContainerEl,
@@ -1831,7 +1831,7 @@ describe('ClaudianView tab controls', () => {
   });
 
   it('refreshes the persistent session column while wide', () => {
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     Object.assign(view, {
       activeSidebarSurface: 'sessions',
@@ -1848,7 +1848,7 @@ describe('ClaudianView tab controls', () => {
   });
 
   it('defers persistent session rendering while the Files surface is active', () => {
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     Object.assign(view, {
       activeSidebarSurface: 'files',
@@ -1865,7 +1865,7 @@ describe('ClaudianView tab controls', () => {
   });
 
   it('defers persistent session column refresh while search IME composition is active', () => {
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     const sessionSidebarEl = createMockEl();
 
     Object.assign(view, {
@@ -1890,7 +1890,7 @@ describe('ClaudianView tab controls', () => {
       expect(container.querySelector('.claudian-history-list')).toBe(previousList);
     });
     const updateHistoryDropdown = jest.fn();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     Object.assign(view, {
       cancelSessionSidebarRendering: jest.fn(),
@@ -2037,7 +2037,7 @@ describe('ClaudianView tab controls', () => {
     const otherView = {
       getTabManager: () => ({ getTab: () => crossViewTab }),
     };
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     view.tabManager = {
       getActiveTab: () => activeTab,
       getAllTabs: () => [activeTab, localTab],
@@ -2059,7 +2059,7 @@ describe('ClaudianView tab controls', () => {
 
   it('notifies other open views when runtime session navigation changes', () => {
     const otherView = { notifyConversationListChanged: jest.fn() };
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       plugin: { getAllViews: jest.fn().mockReturnValue([view, otherView]) },
       updateHistoryDropdown: jest.fn(),
@@ -2073,7 +2073,7 @@ describe('ClaudianView tab controls', () => {
 
   it('persists linked-note pins through the feature host', async () => {
     const setLinkedNotePinned = jest.fn().mockResolvedValue(undefined);
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       plugin: { setLinkedNotePinned },
     });
@@ -2084,7 +2084,7 @@ describe('ClaudianView tab controls', () => {
   });
 
   it('archives linked-note sessions through the existing guarded archive flow', async () => {
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     view.setConversationArchived = jest.fn().mockResolvedValue(undefined);
 
     await view.archiveConversations(['conversation-1', 'conversation-2']);
@@ -2101,7 +2101,7 @@ describe('ClaudianView tab controls', () => {
         { value: 'gpt-5.1-codex', label: 'GPT-5.1 Codex' },
       ]),
     } as any);
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     view.plugin = { settings: {} };
 
     expect(view.getConversationModelLabel({
@@ -2113,7 +2113,7 @@ describe('ClaudianView tab controls', () => {
   it('ignores malformed persisted model metadata in the session hover card', () => {
     const getChatUIConfig = jest.spyOn(ProviderRegistry, 'getChatUIConfig');
     getChatUIConfig.mockClear();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     view.plugin = { settings: {} };
 
     expect(view.getConversationModelLabel({
@@ -2135,7 +2135,7 @@ describe('ClaudianView tab controls', () => {
       sessionManagerSort: 'last-updated',
     };
     const mutateSettings = jest.fn(async (mutation) => mutation(settings));
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     const otherView = { notifyConversationListChanged: jest.fn() };
     Object.assign(view, {
       plugin: {
@@ -2189,7 +2189,7 @@ describe('ClaudianView tab controls', () => {
     list.createDiv({
       cls: 'claudian-history-header claudian-session-list-header',
     });
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       plugin: {
         settings: { sessionManagerSort: 'title' },
@@ -2206,7 +2206,7 @@ describe('ClaudianView tab controls', () => {
 
   it('opens a closed session in a new container from the dual-mode session column', async () => {
     const openConversation = jest.fn().mockResolvedValue(undefined);
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     view.plugin = {
       findConversationAcrossViews: jest.fn().mockReturnValue(null),
@@ -2242,7 +2242,7 @@ describe('ClaudianView tab controls', () => {
         session: createOwnershipSession(),
       });
     });
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     view.plugin = {
       findConversationAcrossViews: jest.fn().mockReturnValue(null),
@@ -2260,7 +2260,7 @@ describe('ClaudianView tab controls', () => {
 
   it('opens a provisional session even when the former tab limit is reached', async () => {
     const openConversation = jest.fn().mockResolvedValue(undefined);
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     view.plugin = {
       findConversationAcrossViews: jest.fn().mockReturnValue(null),
@@ -2286,7 +2286,7 @@ describe('ClaudianView tab controls', () => {
 
   it('switches to an already-open dual-mode session even at container capacity', async () => {
     const openConversation = jest.fn().mockResolvedValue(undefined);
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     view.plugin = {
       findConversationAcrossViews: jest.fn().mockReturnValue(null),
@@ -2306,7 +2306,7 @@ describe('ClaudianView tab controls', () => {
     expect(openConversation).toHaveBeenCalledWith('conversation-2');
   });
 
-  it('observes the Claudian view width and disconnects the observer on teardown', () => {
+  it('observes the DeepSeek Harness view width and disconnects the observer on teardown', () => {
     const viewContainerEl = createMockEl();
     viewContainerEl.getBoundingClientRect = jest.fn().mockReturnValue({ width: 640 });
     const observe = jest.fn();
@@ -2320,7 +2320,7 @@ describe('ClaudianView tab controls', () => {
       observe = observe;
       disconnect = disconnect;
     };
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     Object.assign(view, {
       updateSessionSidebarLayout: jest.fn(),
@@ -2343,7 +2343,7 @@ describe('ClaudianView tab controls', () => {
 
 });
 
-describe('ClaudianView runtime tab initialization', () => {
+describe('DeepSeekHarnessView runtime tab initialization', () => {
   it('creates one fresh runtime tab when no current tab was persisted', async () => {
     let tabManagerCallbacks: any;
     const createTab = jest.fn().mockResolvedValue({});
@@ -2359,7 +2359,7 @@ describe('ClaudianView runtime tab initialization', () => {
       },
     );
 
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       attachNavRowContentToInputFooter: jest.fn(),
       buildInputFooter: jest.fn(),
@@ -2407,7 +2407,7 @@ describe('ClaudianView runtime tab initialization', () => {
       sealShutdownSnapshot,
     }));
 
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       attachNavRowContentToInputFooter: jest.fn(),
       buildInputFooter: jest.fn(),
@@ -2471,7 +2471,7 @@ describe('ClaudianView runtime tab initialization', () => {
       discardProvisionalTabs: jest.fn().mockResolvedValue(undefined),
       getAllTabs: jest.fn().mockReturnValue([]),
     }));
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       attachNavRowContentToInputFooter: jest.fn(),
       buildInputFooter: jest.fn(),
@@ -2526,7 +2526,7 @@ describe('ClaudianView runtime tab initialization', () => {
       discardProvisionalTabs: jest.fn().mockResolvedValue(undefined),
       getAllTabs: jest.fn().mockReturnValue([]),
     }));
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       attachNavRowContentToInputFooter: jest.fn(),
       buildInputFooter: jest.fn(),
@@ -2565,9 +2565,9 @@ describe('ClaudianView runtime tab initialization', () => {
   });
 });
 
-describe('ClaudianView current tab persistence', () => {
+describe('DeepSeekHarnessView current tab persistence', () => {
   it('serializes only the active tab identity without draft state', () => {
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     view.tabManager = {
       getActiveTab: jest.fn().mockReturnValue({
         conversationId: 'conversation-2',
@@ -2583,7 +2583,7 @@ describe('ClaudianView current tab persistence', () => {
   });
 
   it('restores only the active entry from an older multi-tab snapshot', async () => {
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     const createTab = jest.fn().mockResolvedValue({});
     view.plugin = {
       storage: {
@@ -2605,7 +2605,7 @@ describe('ClaudianView current tab persistence', () => {
   });
 
   it('restores an unbound current tab as empty and ignores its legacy draft', async () => {
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     const createTab = jest.fn().mockResolvedValue({});
     view.plugin = {
       storage: {
@@ -2627,7 +2627,7 @@ describe('ClaudianView current tab persistence', () => {
   });
 });
 
-describe('ClaudianView composer input', () => {
+describe('DeepSeekHarnessView composer input', () => {
   function createComposerHarness(existingContent: string): {
     inputEl: HTMLTextAreaElement;
     inputHandler: jest.Mock;
@@ -2641,7 +2641,7 @@ describe('ClaudianView composer input', () => {
     inputEl.focus = jest.fn();
     inputEl.addEventListener('input', inputHandler);
 
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     view.tabManager = {
       getActiveTab: jest.fn().mockReturnValue({
         dom: { inputEl },
@@ -2682,7 +2682,7 @@ describe('ClaudianView composer input', () => {
   });
 
   it('returns false when there is no active composer', () => {
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     view.tabManager = {
       getActiveTab: jest.fn().mockReturnValue(null),
     };
@@ -2691,7 +2691,7 @@ describe('ClaudianView composer input', () => {
   });
 });
 
-describe('ClaudianView shutdown', () => {
+describe('DeepSeekHarnessView shutdown', () => {
   it('prepares plugin unload through one shared drained snapshot', async () => {
     const drain = deferred<void>();
     const flush = jest.fn().mockResolvedValue(undefined);
@@ -2708,7 +2708,7 @@ describe('ClaudianView shutdown', () => {
       flush,
       update: jest.fn(),
     };
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       tabManager: manager,
       tabStatePersistence: persistence,
@@ -2745,7 +2745,7 @@ describe('ClaudianView shutdown', () => {
       getActiveTab: jest.fn().mockReturnValue(activeTab),
       sealShutdownSnapshot,
     };
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       cancelHistoryRendering: jest.fn(),
       eventRefs: [],
@@ -2787,7 +2787,7 @@ describe('ClaudianView shutdown', () => {
   });
 
   it('flushes the current tab identity before disposing view resources', async () => {
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     const beginShutdown = jest.fn();
     const destroy = jest.fn().mockResolvedValue(undefined);
     const sealShutdownSnapshot = jest.fn();
@@ -2852,7 +2852,7 @@ describe('ClaudianView shutdown', () => {
   });
 
   it('still disposes view resources when the current-tab flush fails', async () => {
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     const destroy = jest.fn().mockResolvedValue(undefined);
     const disposePersistence = jest.fn();
 
@@ -2904,7 +2904,7 @@ describe('ClaudianView shutdown', () => {
       flush: jest.fn(() => flush.promise),
       update,
     };
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       cancelHistoryRendering: jest.fn(),
       eventRefs: [],
@@ -2956,7 +2956,7 @@ describe('ClaudianView shutdown', () => {
     const oldTabBar = { destroy: jest.fn() };
     const oldMentionCoordinator = {};
     const oldScope = {};
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       cancelHistoryRendering: jest.fn(),
       eventRefs: [],
@@ -3010,7 +3010,7 @@ describe('ClaudianView shutdown', () => {
       getActiveTab: jest.fn().mockReturnValue({ conversationId: null, id: 'old-tab' }),
       sealShutdownSnapshot: jest.fn(),
     };
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
     Object.assign(view, {
       cancelHistoryRendering: jest.fn(),
       eventRefs: [],
@@ -3039,7 +3039,7 @@ describe('ClaudianView shutdown', () => {
   });
 });
 
-describe('ClaudianView Escape handling', () => {
+describe('DeepSeekHarnessView Escape handling', () => {
   beforeEach(() => {
     MockScope.instances.length = 0;
   });
@@ -3056,7 +3056,7 @@ describe('ClaudianView Escape handling', () => {
     const cancelStreaming = jest.fn();
     const eventRefs: unknown[] = [];
     const parentScope = new Scope();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     view.app = { scope: parentScope };
     view.containerEl = createMockEl();
@@ -3118,7 +3118,7 @@ describe('ClaudianView Escape handling', () => {
     });
     const eventRefs: unknown[] = [];
     const parentScope = new Scope();
-    const view = Object.create(ClaudianView.prototype) as any;
+    const view = Object.create(DeepSeekHarnessView.prototype) as any;
 
     view.app = { scope: parentScope };
     view.containerEl = createMockEl();

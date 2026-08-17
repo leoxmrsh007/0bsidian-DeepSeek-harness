@@ -1,17 +1,17 @@
 import { getRuntimeEnvironmentVariables } from '../../core/providers/providerEnvironment';
 import type { ProviderUIOption } from '../../core/providers/types';
 import {
-  type ClaudeModelEnvType,
+  type DeepSeekModelEnvType,
   getModelsFromEnvironment,
-} from './env/claudeModelEnv';
+} from './env/deepseekModelEnv';
 import { formatCustomModelLabel } from './modelLabels';
-import { encodeClaudeModelSelectionId, toClaudeRuntimeModelId } from './modelSelection';
-import { isClaudeModelTier } from './modelTiers';
-import { getClaudeProviderSettings } from './settings';
-import { DEFAULT_CLAUDE_MODELS, normalizeLegacyClaudeModelAlias } from './types/models';
+import { encodeDeepSeekModelSelectionId, toDeepSeekRuntimeModelId } from './modelSelection';
+import { isDeepSeekModelTier } from './modelTiers';
+import { getDeepSeekProviderSettings } from './settings';
+import { DEFAULT_DEEPSEEK_MODELS, normalizeLegacyDeepSeekModelAlias } from './types/models';
 
-export interface ClaudeModelOption extends ProviderUIOption {
-  environmentTypes?: readonly ClaudeModelEnvType[];
+export interface DeepSeekModelOption extends ProviderUIOption {
+  environmentTypes?: readonly DeepSeekModelEnvType[];
 }
 
 function parseConfiguredCustomModelIds(value: string): string[] {
@@ -51,7 +51,7 @@ function normalizeCustomModelAliases(value: unknown): Record<string, string> {
   return aliases;
 }
 
-export function getClaudeModelOptions(settings: Record<string, unknown>): ClaudeModelOption[] {
+export function getDeepSeekModelOptions(settings: Record<string, unknown>): DeepSeekModelOption[] {
   const customModelAliases = normalizeCustomModelAliases(settings.customModelAliases);
   const customModels = getModelsFromEnvironment(
     getRuntimeEnvironmentVariables(settings, 'deepseek'),
@@ -60,26 +60,26 @@ export function getClaudeModelOptions(settings: Record<string, unknown>): Claude
   if (customModels.length > 0) {
     return customModels.map((model) => ({
       ...model,
-      value: encodeClaudeModelSelectionId(model.value),
+      value: encodeDeepSeekModelSelectionId(model.value),
     }));
   }
 
-  const claudeSettings = getClaudeProviderSettings(settings);
-  const models = [...DEFAULT_CLAUDE_MODELS];
+  const claudeSettings = getDeepSeekProviderSettings(settings);
+  const models = [...DEFAULT_DEEPSEEK_MODELS];
 
   const seenModelIds = new Set(models.map(model =>
-    normalizeLegacyClaudeModelAlias(toClaudeRuntimeModelId(model.value))
+    normalizeLegacyDeepSeekModelAlias(toDeepSeekRuntimeModelId(model.value))
   ));
   for (const configuredModelId of parseConfiguredCustomModelIds(claudeSettings.customModels)) {
-    const modelId = toClaudeRuntimeModelId(configuredModelId);
-    const normalizedModelId = normalizeLegacyClaudeModelAlias(modelId);
+    const modelId = toDeepSeekRuntimeModelId(configuredModelId);
+    const normalizedModelId = normalizeLegacyDeepSeekModelAlias(modelId);
     if (seenModelIds.has(normalizedModelId)) {
       continue;
     }
 
     seenModelIds.add(normalizedModelId);
     models.push({
-      value: encodeClaudeModelSelectionId(modelId),
+      value: encodeDeepSeekModelSelectionId(modelId),
       label: customModelAliases[modelId] ?? formatCustomModelLabel(modelId),
       description: 'Custom model',
     });
@@ -88,20 +88,20 @@ export function getClaudeModelOptions(settings: Record<string, unknown>): Claude
   return models;
 }
 
-export function findClaudeModelOption(
-  modelOptions: readonly ClaudeModelOption[],
+export function findDeepSeekModelOption(
+  modelOptions: readonly DeepSeekModelOption[],
   model: string,
-): ClaudeModelOption | undefined {
-  const runtimeModel = toClaudeRuntimeModelId(model);
+): DeepSeekModelOption | undefined {
+  const runtimeModel = toDeepSeekRuntimeModelId(model);
   const exactOption = modelOptions.find(option =>
-    option.value === model || toClaudeRuntimeModelId(option.value) === runtimeModel
+    option.value === model || toDeepSeekRuntimeModelId(option.value) === runtimeModel
   );
   if (exactOption) {
     return exactOption;
   }
 
-  const normalizedRuntimeModel = normalizeLegacyClaudeModelAlias(toClaudeRuntimeModelId(model));
-  if (isClaudeModelTier(normalizedRuntimeModel)) {
+  const normalizedRuntimeModel = normalizeLegacyDeepSeekModelAlias(toDeepSeekRuntimeModelId(model));
+  if (isDeepSeekModelTier(normalizedRuntimeModel)) {
     const tierOption = modelOptions.find(option =>
       option.environmentTypes?.includes(normalizedRuntimeModel)
     );
@@ -111,14 +111,14 @@ export function findClaudeModelOption(
   }
 
   return modelOptions.find(option =>
-    normalizeLegacyClaudeModelAlias(toClaudeRuntimeModelId(option.value)) === normalizedRuntimeModel
+    normalizeLegacyDeepSeekModelAlias(toDeepSeekRuntimeModelId(option.value)) === normalizedRuntimeModel
   );
 }
 
-export function findClaudeModelOptionForEnvironmentType(
-  modelOptions: readonly ClaudeModelOption[],
-  environmentType: ClaudeModelEnvType,
-): ClaudeModelOption | undefined {
+export function findDeepSeekModelOptionForEnvironmentType(
+  modelOptions: readonly DeepSeekModelOption[],
+  environmentType: DeepSeekModelEnvType,
+): DeepSeekModelOption | undefined {
   const environmentOption = modelOptions.find(option =>
     option.environmentTypes?.includes(environmentType)
   );
@@ -128,15 +128,15 @@ export function findClaudeModelOptionForEnvironmentType(
 
   return modelOptions.find(option =>
     !option.environmentTypes
-    && normalizeLegacyClaudeModelAlias(toClaudeRuntimeModelId(option.value)) === environmentType
+    && normalizeLegacyDeepSeekModelAlias(toDeepSeekRuntimeModelId(option.value)) === environmentType
   );
 }
 
-export function resolveClaudeModelEnvironmentTypePreference(
-  modelOptions: readonly ClaudeModelOption[],
+export function resolveDeepSeekModelEnvironmentTypePreference(
+  modelOptions: readonly DeepSeekModelOption[],
   model: string,
-  previousEnvironmentType: ClaudeModelEnvType | '' = '',
-): ClaudeModelEnvType | null {
+  previousEnvironmentType: DeepSeekModelEnvType | '' = '',
+): DeepSeekModelEnvType | null {
   const exactEnvironmentTypes = modelOptions.find(option => option.value === model)
     ?.environmentTypes;
   if (exactEnvironmentTypes) {
@@ -149,9 +149,9 @@ export function resolveClaudeModelEnvironmentTypePreference(
     return exactEnvironmentTypes.length === 1 ? exactEnvironmentTypes[0] : null;
   }
 
-  const runtimeModel = toClaudeRuntimeModelId(model);
+  const runtimeModel = toDeepSeekRuntimeModelId(model);
   const runtimeEnvironmentTypes = modelOptions.find(option =>
-    toClaudeRuntimeModelId(option.value) === runtimeModel
+    toDeepSeekRuntimeModelId(option.value) === runtimeModel
   )?.environmentTypes;
   if (runtimeEnvironmentTypes) {
     if (
@@ -163,12 +163,12 @@ export function resolveClaudeModelEnvironmentTypePreference(
     return runtimeEnvironmentTypes.length === 1 ? runtimeEnvironmentTypes[0] : null;
   }
 
-  const normalizedModel = normalizeLegacyClaudeModelAlias(runtimeModel);
-  if (isClaudeModelTier(normalizedModel)) {
+  const normalizedModel = normalizeLegacyDeepSeekModelAlias(runtimeModel);
+  if (isDeepSeekModelTier(normalizedModel)) {
     return normalizedModel;
   }
 
-  const environmentTypes = findClaudeModelOption(modelOptions, model)?.environmentTypes;
+  const environmentTypes = findDeepSeekModelOption(modelOptions, model)?.environmentTypes;
   if (!environmentTypes) {
     return null;
   }
@@ -183,14 +183,14 @@ export function resolveClaudeModelEnvironmentTypePreference(
   return environmentTypes.length === 1 ? environmentTypes[0] : null;
 }
 
-export function resolveClaudeModelSelection(
+export function resolveDeepSeekModelSelection(
   settings: Record<string, unknown>,
   currentModel: string,
-  preferredEnvironmentType?: ClaudeModelEnvType,
+  preferredEnvironmentType?: DeepSeekModelEnvType,
 ): string | null {
-  const modelOptions = getClaudeModelOptions(settings);
+  const modelOptions = getDeepSeekModelOptions(settings);
   if (preferredEnvironmentType) {
-    const preferredOption = findClaudeModelOptionForEnvironmentType(
+    const preferredOption = findDeepSeekModelOptionForEnvironmentType(
       modelOptions,
       preferredEnvironmentType,
     );
@@ -200,15 +200,15 @@ export function resolveClaudeModelSelection(
   }
 
   if (currentModel) {
-    const currentOption = findClaudeModelOption(modelOptions, currentModel);
+    const currentOption = findDeepSeekModelOption(modelOptions, currentModel);
     if (currentOption) {
       return currentOption.value;
     }
   }
 
-  const lastModel = getClaudeProviderSettings(settings).lastModel;
+  const lastModel = getDeepSeekProviderSettings(settings).lastModel;
   if (lastModel) {
-    const lastOption = findClaudeModelOption(modelOptions, lastModel);
+    const lastOption = findDeepSeekModelOption(modelOptions, lastModel);
     if (lastOption) {
       return lastOption.value;
     }

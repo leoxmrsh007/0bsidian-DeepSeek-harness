@@ -522,13 +522,13 @@ describe('VaultFileAdapter', () => {
       });
 
       await expect(Promise.all([
-        vaultAdapter.ensureFolder('.claudian/sessions'),
-        vaultAdapter.ensureFolder('.claudian/sessions'),
+        vaultAdapter.ensureFolder('.deepseek-harness/sessions'),
+        vaultAdapter.ensureFolder('.deepseek-harness/sessions'),
       ])).resolves.toEqual([undefined, undefined]);
 
       expect(mockAdapter.mkdir).toHaveBeenCalledTimes(2);
-      expect(mockAdapter.mkdir).toHaveBeenNthCalledWith(1, '.claudian');
-      expect(mockAdapter.mkdir).toHaveBeenNthCalledWith(2, '.claudian/sessions');
+      expect(mockAdapter.mkdir).toHaveBeenNthCalledWith(1, '.deepseek-harness');
+      expect(mockAdapter.mkdir).toHaveBeenNthCalledWith(2, '.deepseek-harness/sessions');
     });
   });
 

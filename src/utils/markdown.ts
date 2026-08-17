@@ -1,5 +1,5 @@
 /**
- * Claudian - Markdown Utilities
+ * DeepSeek Harness - Markdown Utilities
  *
  * Markdown manipulation helpers.
  */

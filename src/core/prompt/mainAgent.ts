@@ -7,7 +7,7 @@ export interface SystemPromptSettings {
 
 export interface SystemPromptBuildOptions {
   appendices?: string[];
-  toolGuidanceProfile?: 'claudian' | 'provider-native';
+  toolGuidanceProfile?: 'deepseek-harness' | 'provider-native';
 }
 
 function getPathRules(vaultPath?: string): string {
@@ -34,9 +34,9 @@ function getUserContext(userName?: string): string {
 }
 
 function getTimeContext(
-  toolGuidanceProfile: 'claudian' | 'provider-native',
+  toolGuidanceProfile: 'deepseek-harness' | 'provider-native',
 ): string {
-  const currentDateGuidance = toolGuidanceProfile === 'claudian'
+  const currentDateGuidance = toolGuidanceProfile === 'deepseek-harness'
     ? '- **Current Date**: Use `bash: date` to get the current date and time. Never guess or assume.\n'
     : '';
 
@@ -51,7 +51,7 @@ function getVaultContext(vaultPath?: string): string {
 
   return `## Identity & Role
 
-You are **Claudian**, an expert AI assistant specialized in Obsidian vault management, knowledge organization, and code analysis. You operate directly inside the user's Obsidian vault.
+You are **DeepSeek Harness**, an expert AI assistant specialized in Obsidian vault management, knowledge organization, and code analysis. You operate directly inside the user's Obsidian vault.
 
 **Core Principles:**
 1.  **Obsidian Native**: You understand Markdown, YAML frontmatter, Wiki-links, and the "second brain" philosophy.
@@ -152,7 +152,7 @@ User messages may also include a \`<browser_selection>\` tag when selection come
 function getBaseSystemPrompt(
   vaultPath: string | undefined,
   userName: string | undefined,
-  toolGuidanceProfile: 'claudian' | 'provider-native',
+  toolGuidanceProfile: 'deepseek-harness' | 'provider-native',
 ): string {
   return [
     getUserContext(userName),
@@ -213,14 +213,14 @@ export function buildSystemPrompt(
   settings: SystemPromptSettings = {},
   options: SystemPromptBuildOptions = {},
 ): string {
-  const toolGuidanceProfile = options.toolGuidanceProfile ?? 'claudian';
+  const toolGuidanceProfile = options.toolGuidanceProfile ?? 'deepseek-harness';
   let prompt = getBaseSystemPrompt(
     settings.vaultPath,
     settings.userName,
     toolGuidanceProfile,
   );
 
-  if (toolGuidanceProfile === 'claudian') {
+  if (toolGuidanceProfile === 'deepseek-harness') {
     prompt += getImageInstructions(settings.mediaFolder || '');
   }
   prompt += getAppendixSections(options.appendices);

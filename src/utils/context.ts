@@ -1,5 +1,5 @@
 /**
- * Claudian - Context Utilities
+ * DeepSeek Harness - Context Utilities
  *
  * Note and context file formatting for prompts.
  */

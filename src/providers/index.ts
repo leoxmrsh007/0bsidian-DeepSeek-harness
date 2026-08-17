@@ -12,7 +12,6 @@ export function registerBuiltInProviders(): void {
   if (builtInProvidersRegistered) {
     return;
   }
-
   for (const providerModule of BUILT_IN_PROVIDER_MODULES) {
     ProviderRegistry.register(providerModule.id, providerModule);
     ProviderWorkspaceRegistry.register(providerModule.id, providerModule.workspace);

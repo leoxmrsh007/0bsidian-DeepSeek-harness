@@ -2,7 +2,7 @@ import type { Conversation } from '../../../core/types';
 import type { ForkSource } from '../../../core/types/chat';
 import type { SubagentInfo } from '../../../core/types/tools';
 
-export interface ClaudeProviderState {
+export interface DeepSeekProviderState {
   providerSessionId?: string;
   previousProviderSessionIds?: string[];
   historyReplayPending?: boolean;
@@ -11,14 +11,14 @@ export interface ClaudeProviderState {
 }
 
 /** Extracts typed Claude provider state from the opaque bag. */
-export function getClaudeState(
+export function getDeepSeekState(
   providerState: Record<string, unknown> | undefined,
-): ClaudeProviderState {
+): DeepSeekProviderState {
   return (providerState ?? {});
 }
 
-export function getClaudeConversationSessionIds(conversation: Conversation): string[] {
-  const state = getClaudeState(conversation.providerState);
+export function getDeepSeekConversationSessionIds(conversation: Conversation): string[] {
+  const state = getDeepSeekState(conversation.providerState);
   const isPendingFork = !!state.forkSource
     && !state.providerSessionId
     && !conversation.sessionId;
@@ -32,8 +32,8 @@ export function getClaudeConversationSessionIds(conversation: Conversation): str
   ].filter((id): id is string => !!id))];
 }
 
-export function clearClaudeResumeState(conversation: Conversation): boolean {
-  const providerState = { ...getClaudeState(conversation.providerState) };
+export function clearDeepSeekResumeState(conversation: Conversation): boolean {
+  const providerState = { ...getDeepSeekState(conversation.providerState) };
   const isPendingFork = !!providerState.forkSource
     && !providerState.providerSessionId
     && !conversation.sessionId;
@@ -45,7 +45,7 @@ export function clearClaudeResumeState(conversation: Conversation): boolean {
   }
 
   // Stop provider resume while retaining transcript segments for history replay.
-  const preservedSessionIds = getClaudeConversationSessionIds(conversation);
+  const preservedSessionIds = getDeepSeekConversationSessionIds(conversation);
   if (preservedSessionIds.length > 0) {
     providerState.previousProviderSessionIds = preservedSessionIds;
   } else {

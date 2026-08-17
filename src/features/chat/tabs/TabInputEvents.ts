@@ -1,6 +1,6 @@
 import { Platform } from 'obsidian';
 
-import type { ClaudianSettings } from '../../../core/types';
+import type { DeepSeekHarnessSettings } from '../../../core/types';
 import type { AssembledTabRuntime } from './types';
 
 function isEnterWithoutShiftOrComposition(event: KeyboardEvent): boolean {
@@ -21,7 +21,7 @@ function shouldSendMessageFromExplicitEnterShortcut(event: KeyboardEvent): boole
 
 function shouldSendMessageFromEnterKey(
   event: KeyboardEvent,
-  settings: Pick<ClaudianSettings, 'requireCommandOrControlEnterToSend'>,
+  settings: Pick<DeepSeekHarnessSettings, 'requireCommandOrControlEnterToSend'>,
 ): boolean {
   if (!isEnterWithoutShiftOrComposition(event)) {
     return false;
@@ -71,7 +71,7 @@ export function sendTabInputMessageFromExplicitEnterShortcut(
 
 export function sendTabInputMessageFromEnterKey(
   tab: AssembledTabRuntime,
-  settings: Pick<ClaudianSettings, 'requireCommandOrControlEnterToSend'>,
+  settings: Pick<DeepSeekHarnessSettings, 'requireCommandOrControlEnterToSend'>,
   event: KeyboardEvent,
 ): boolean {
   if (!shouldSendMessageFromEnterKey(event, settings)) {

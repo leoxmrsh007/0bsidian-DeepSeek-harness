@@ -1,4 +1,4 @@
-const WELCOME_BRAND_NAME = 'Claudian';
+const WELCOME_BRAND_NAME = 'DeepSeek Harness';
 
 export function renderWelcomeContent(
   welcomeEl: HTMLElement,

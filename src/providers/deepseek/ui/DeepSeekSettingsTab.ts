@@ -7,8 +7,8 @@ import { renderEnvironmentSettingsSection } from '../../../shared/settings/Envir
 import { renderProviderEnablementSetting } from '../../../shared/settings/ProviderEnablementSetting';
 import { renderLastEnabledProviderWarning } from '../../../shared/settings/ProviderModelEnablementWarning';
 import {
-  getClaudeProviderSettings,
-  updateClaudeProviderSettings,
+  getDeepSeekProviderSettings,
+  updateDeepSeekProviderSettings,
 } from '../settings';
 
 export const deepseekSettingsTabRenderer: ProviderSettingsTabRenderer = {
@@ -22,7 +22,7 @@ export const deepseekSettingsTabRenderer: ProviderSettingsTabRenderer = {
     renderProviderEnablementSetting({
       container,
       description: t('settings.providerEnablement.desc', { provider: 'DeepSeek' }),
-      getValue: () => getClaudeProviderSettings(settingsBag).enabled,
+      getValue: () => getDeepSeekProviderSettings(settingsBag).enabled,
       name: t('settings.providerEnablement.name', { provider: 'DeepSeek' }),
       onChange: async (value) => {
         if (!ProviderSettingsCoordinator.canApplyProviderEnablement(
@@ -62,13 +62,13 @@ export const deepseekSettingsTabRenderer: ProviderSettingsTabRenderer = {
         text
           // eslint-disable-next-line obsidianmd/ui/sentence-case -- URL placeholder
           .setPlaceholder('http://127.0.0.1:3080')
-          .setValue(getClaudeProviderSettings(settingsBag).harnessBaseUrl)
+          .setValue(getDeepSeekProviderSettings(settingsBag).harnessBaseUrl)
           .onChange(async (value) => {
             const trimmed = value.trim();
             await context.plugin.applyProviderRuntimeSettings(
               ['deepseek'],
               (settings) => {
-                updateClaudeProviderSettings(settings, {
+                updateDeepSeekProviderSettings(settings, {
                   harnessBaseUrl: trimmed || 'http://127.0.0.1:3080',
                 });
               },
@@ -81,12 +81,12 @@ export const deepseekSettingsTabRenderer: ProviderSettingsTabRenderer = {
       .setDesc('Start `dsh web` automatically when the harness is not reachable.')
       .addToggle((toggle) => {
         toggle
-          .setValue(getClaudeProviderSettings(settingsBag).autoLaunch)
+          .setValue(getDeepSeekProviderSettings(settingsBag).autoLaunch)
           .onChange(async (value) => {
             await context.plugin.applyProviderRuntimeSettings(
               ['deepseek'],
               (settings) => {
-                updateClaudeProviderSettings(settings, { autoLaunch: value });
+                updateDeepSeekProviderSettings(settings, { autoLaunch: value });
               },
             );
           });

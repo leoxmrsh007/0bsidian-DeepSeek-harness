@@ -7,17 +7,17 @@ import {
 } from '../../core/providers/settings/storedSettings';
 import type { HostnameCliPaths } from '../../core/types/settings';
 import {
-  type ClaudeModelEnvironmentType,
-  isClaudeModelEnvironmentType,
+  type DeepSeekModelEnvironmentType,
+  isDeepSeekModelEnvironmentType,
 } from './modelTiers';
 
-export const CLAUDE_SAFE_MODES = ['acceptEdits', 'auto', 'default'] as const;
-export type ClaudeSafeMode = typeof CLAUDE_SAFE_MODES[number];
-export type ClaudeSettingSource = 'user' | 'project' | 'local';
+export const DEEPSEEK_SAFE_MODES = ['acceptEdits', 'auto', 'default'] as const;
+export type DeepSeekSafeMode = typeof DEEPSEEK_SAFE_MODES[number];
+export type DeepSeekSettingSource = 'user' | 'project' | 'local';
 
-export interface ClaudeProviderSettings {
+export interface DeepSeekProviderSettings {
   enabled: boolean;
-  safeMode: ClaudeSafeMode;
+  safeMode: DeepSeekSafeMode;
   cliPath: string;
   cliPathsByHost: HostnameCliPaths;
   loadUserSettings: boolean;
@@ -26,8 +26,8 @@ export interface ClaudeProviderSettings {
   customModels: string;
   defaultModel: string;
   lastModel: string;
-  modelEnvironmentType: ClaudeModelEnvironmentType | '';
-  titleModelEnvironmentType: ClaudeModelEnvironmentType | '';
+  modelEnvironmentType: DeepSeekModelEnvironmentType | '';
+  titleModelEnvironmentType: DeepSeekModelEnvironmentType | '';
   environmentVariables: string;
   environmentHash: string;
   /** Base URL of the DeepSeek Harness local RPC API. */
@@ -38,7 +38,7 @@ export interface ClaudeProviderSettings {
   dshPath: string;
 }
 
-export const DEFAULT_CLAUDE_PROVIDER_SETTINGS: Readonly<ClaudeProviderSettings> = Object.freeze({
+export const DEFAULT_DEEPSEEK_PROVIDER_SETTINGS: Readonly<DeepSeekProviderSettings> = Object.freeze({
   enabled: false,
   safeMode: 'acceptEdits',
   cliPath: '',
@@ -58,128 +58,120 @@ export const DEFAULT_CLAUDE_PROVIDER_SETTINGS: Readonly<ClaudeProviderSettings> 
   dshPath: '',
 });
 
-function normalizeClaudeSafeMode(value: unknown): ClaudeSafeMode | undefined {
-  return (CLAUDE_SAFE_MODES as readonly unknown[]).includes(value)
-    ? value as ClaudeSafeMode
+function normalizeDeepSeekSafeMode(value: unknown): DeepSeekSafeMode | undefined {
+  return (DEEPSEEK_SAFE_MODES as readonly unknown[]).includes(value)
+    ? value as DeepSeekSafeMode
     : undefined;
 }
 
-function readStoredClaudeSafeMode(
+function readStoredDeepSeekSafeMode(
   value: unknown,
-  fallback: ClaudeSafeMode,
-): ClaudeSafeMode {
+  fallback: DeepSeekSafeMode,
+): DeepSeekSafeMode {
   if (value === undefined) {
     return fallback;
   }
-  return normalizeClaudeSafeMode(value) ?? 'default';
+  return normalizeDeepSeekSafeMode(value) ?? 'default';
 }
 
-function normalizeClaudeModelEnvironmentType(
+function normalizeDeepSeekModelEnvironmentType(
   value: unknown,
-): ClaudeModelEnvironmentType | '' {
-  return typeof value === 'string' && isClaudeModelEnvironmentType(value)
+): DeepSeekModelEnvironmentType | '' {
+  return typeof value === 'string' && isDeepSeekModelEnvironmentType(value)
     ? value
     : '';
 }
 
-export function getClaudeProviderSettings(
+export function getDeepSeekProviderSettings(
   settings: Record<string, unknown>,
-): ClaudeProviderSettings {
+): DeepSeekProviderSettings {
   const config = getProviderConfig(settings, 'deepseek');
-  const cliPathsByHost = normalizeHostnameStringMap(
-    config.cliPathsByHost ?? settings.claudeCliPathsByHost,
-  );
+  const cliPathsByHost = normalizeHostnameStringMap(config.cliPathsByHost);
 
   return {
     enabled: readStoredBoolean(
       config.enabled,
-      DEFAULT_CLAUDE_PROVIDER_SETTINGS.enabled,
+      DEFAULT_DEEPSEEK_PROVIDER_SETTINGS.enabled,
     ),
-    safeMode: readStoredClaudeSafeMode(
+    safeMode: readStoredDeepSeekSafeMode(
       config.safeMode,
-      readStoredClaudeSafeMode(
-        settings.claudeSafeMode,
-        DEFAULT_CLAUDE_PROVIDER_SETTINGS.safeMode,
-      ),
+      DEFAULT_DEEPSEEK_PROVIDER_SETTINGS.safeMode,
     ),
     cliPath: readStoredString(
       config.cliPath,
-      readStoredString(settings.claudeCliPath, DEFAULT_CLAUDE_PROVIDER_SETTINGS.cliPath),
+      DEFAULT_DEEPSEEK_PROVIDER_SETTINGS.cliPath,
     ),
     cliPathsByHost,
     loadUserSettings: readStoredBoolean(
       config.loadUserSettings,
-      readStoredBoolean(
-        settings.loadUserClaudeSettings,
-        DEFAULT_CLAUDE_PROVIDER_SETTINGS.loadUserSettings,
-      ),
+      DEFAULT_DEEPSEEK_PROVIDER_SETTINGS.loadUserSettings,
     ),
     enableChrome: readStoredBoolean(
       config.enableChrome,
-      readStoredBoolean(settings.enableChrome, DEFAULT_CLAUDE_PROVIDER_SETTINGS.enableChrome),
+      DEFAULT_DEEPSEEK_PROVIDER_SETTINGS.enableChrome,
     ),
     enableBangBash: readStoredBoolean(
       config.enableBangBash,
-      readStoredBoolean(settings.enableBangBash, DEFAULT_CLAUDE_PROVIDER_SETTINGS.enableBangBash),
+      DEFAULT_DEEPSEEK_PROVIDER_SETTINGS.enableBangBash,
     ),
     customModels: readStoredString(
       config.customModels,
-      DEFAULT_CLAUDE_PROVIDER_SETTINGS.customModels,
+      DEFAULT_DEEPSEEK_PROVIDER_SETTINGS.customModels,
     ),
     defaultModel: readStoredString(
       config.defaultModel,
-      DEFAULT_CLAUDE_PROVIDER_SETTINGS.defaultModel,
+      DEFAULT_DEEPSEEK_PROVIDER_SETTINGS.defaultModel,
     ),
     lastModel: readStoredString(
       config.lastModel,
-      readStoredString(settings.lastClaudeModel, DEFAULT_CLAUDE_PROVIDER_SETTINGS.lastModel),
+      DEFAULT_DEEPSEEK_PROVIDER_SETTINGS.lastModel,
     ),
-    modelEnvironmentType: normalizeClaudeModelEnvironmentType(config.modelEnvironmentType),
-    titleModelEnvironmentType: normalizeClaudeModelEnvironmentType(
+    modelEnvironmentType: normalizeDeepSeekModelEnvironmentType(config.modelEnvironmentType),
+    titleModelEnvironmentType: normalizeDeepSeekModelEnvironmentType(
       config.titleModelEnvironmentType,
     ),
     environmentVariables: readStoredString(
       config.environmentVariables,
       getProviderEnvironmentVariables(settings, 'deepseek')
-        ?? DEFAULT_CLAUDE_PROVIDER_SETTINGS.environmentVariables,
+        ?? DEFAULT_DEEPSEEK_PROVIDER_SETTINGS.environmentVariables,
     ),
     environmentHash: readStoredString(
       config.environmentHash,
-      readStoredString(settings.lastEnvHash, DEFAULT_CLAUDE_PROVIDER_SETTINGS.environmentHash),
+      DEFAULT_DEEPSEEK_PROVIDER_SETTINGS.environmentHash,
     ),
     harnessBaseUrl: readStoredString(
       config.harnessBaseUrl,
-      DEFAULT_CLAUDE_PROVIDER_SETTINGS.harnessBaseUrl,
+      DEFAULT_DEEPSEEK_PROVIDER_SETTINGS.harnessBaseUrl,
     ),
     autoLaunch: readStoredBoolean(
       config.autoLaunch,
-      DEFAULT_CLAUDE_PROVIDER_SETTINGS.autoLaunch,
+      DEFAULT_DEEPSEEK_PROVIDER_SETTINGS.autoLaunch,
     ),
     dshPath: readStoredString(
       config.dshPath,
-      DEFAULT_CLAUDE_PROVIDER_SETTINGS.dshPath,
+      DEFAULT_DEEPSEEK_PROVIDER_SETTINGS.dshPath,
     ),
   };
 }
 
-export function resolveClaudeSettingSources(
+export function resolveDeepSeekSettingSources(
   loadUserSettings: boolean,
-): ClaudeSettingSource[] {
+): DeepSeekSettingSource[] {
   return loadUserSettings
     ? ['user', 'project', 'local']
     : ['project', 'local'];
 }
 
-export function updateClaudeProviderSettings(
+export function updateDeepSeekProviderSettings(
   settings: Record<string, unknown>,
-  updates: Partial<ClaudeProviderSettings>,
-): ClaudeProviderSettings {
-  const current = getClaudeProviderSettings(settings);
+  updates: Partial<DeepSeekProviderSettings>,
+): DeepSeekProviderSettings {
+  const current = getDeepSeekProviderSettings(settings);
   const next = {
     ...current,
     ...updates,
     safeMode: 'safeMode' in updates
-      ? normalizeClaudeSafeMode(updates.safeMode) ?? current.safeMode
+      ? normalizeDeepSeekSafeMode(updates.safeMode) ?? current.safeMode
       : current.safeMode,
   };
   setProviderConfig(settings, 'deepseek', next);

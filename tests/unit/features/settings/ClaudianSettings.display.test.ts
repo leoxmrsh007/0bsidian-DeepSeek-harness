@@ -95,15 +95,15 @@ jest.mock('obsidian', () => {
   };
 });
 
-import { DEFAULT_CLAUDIAN_SETTINGS } from '@/app/settings/defaultSettings';
-import { ClaudianSettingTab } from '@/features/settings/ClaudianSettings';
+import { DEFAULT_SETTINGS } from '@/app/settings/defaultSettings';
+import { DeepSeekHarnessSettingTab } from '@/features/settings/DeepSeekHarnessSettings';
 import { t } from '@/i18n/i18n';
 
 function createTab(enableDualPane: boolean, enableFilePane = true): {
-  tab: ClaudianSettingTab;
+  tab: DeepSeekHarnessSettingTab;
   plugin: Record<string, any>;
 } {
-  const settings = { ...DEFAULT_CLAUDIAN_SETTINGS, enableDualPane, enableFilePane };
+  const settings = { ...DEFAULT_SETTINGS, enableDualPane, enableFilePane };
   const plugin = {
     settings,
     mutateSettings: jest.fn(async (mutation: (value: typeof settings) => void) => {
@@ -125,7 +125,7 @@ function createTab(enableDualPane: boolean, enableFilePane = true): {
   };
 
   return {
-    tab: new ClaudianSettingTab({} as any, plugin as any),
+    tab: new DeepSeekHarnessSettingTab({} as any, plugin as any),
     plugin,
   };
 }
@@ -145,7 +145,7 @@ function createContainer(): Record<string, jest.Mock> {
   return element;
 }
 
-describe('ClaudianSettingTab display settings', () => {
+describe('DeepSeekHarnessSettingTab display settings', () => {
   beforeEach(() => {
     mockRenderedSettingNames.length = 0;
     mockToggleChanges.clear();

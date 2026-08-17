@@ -4,9 +4,9 @@ import type { SharedAppStorage } from '../core/bootstrap/storage';
 import type { ProviderHost } from '../core/providers/ProviderHost';
 import type { ProviderId } from '../core/providers/types';
 import type {
-  ClaudianSettings,
   Conversation,
   ConversationMeta,
+  DeepSeekHarnessSettings,
   StoredChatModelSelection,
 } from '../core/types';
 import type { ChatExecutionPersistence } from './chat/execution/ChatExecutionCoordinator';
@@ -49,12 +49,12 @@ export interface FeatureHost {
   readonly chatModelSelection: ChatModelSelectionPort;
   readonly executionPersistence: ChatExecutionPersistence;
   readonly providerHost: ProviderHost;
-  readonly settings: ClaudianSettings;
+  readonly settings: DeepSeekHarnessSettings;
   readonly storage: SharedAppStorage;
   readonly warmExecutionPool: WarmExecutionPool;
 
   mutateSettings(
-    mutation: (settings: ClaudianSettings) => void | Promise<void>,
+    mutation: (settings: DeepSeekHarnessSettings) => void | Promise<void>,
   ): Promise<void>;
   getActiveEnvironmentVariables(providerId?: ProviderId): string;
   getAgentSkillResourceGeneration(): number;

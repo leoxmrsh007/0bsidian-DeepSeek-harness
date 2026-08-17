@@ -1,5 +1,5 @@
 /**
- * Claudian - Image Embed Utilities
+ * DeepSeek Harness - Image Embed Utilities
  *
  * Replaces Obsidian image embeds ![[image.png]] with HTML <img> tags
  * before MarkdownRenderer processes the content.

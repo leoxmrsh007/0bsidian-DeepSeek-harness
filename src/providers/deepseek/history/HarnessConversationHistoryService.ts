@@ -3,7 +3,7 @@ import type {
   ProviderHistoryPathContext,
 } from '../../../core/providers/types';
 import type { Conversation } from '../../../core/types';
-import { getClaudeProviderSettings } from '../settings';
+import { getDeepSeekProviderSettings } from '../settings';
 
 /**
  * Harness-backed conversation history service.
@@ -78,7 +78,7 @@ export function resolveHarnessBaseUrl(
   const settings = pathContext?.settings;
   if (!settings) return fallback;
   try {
-    return getClaudeProviderSettings(settings).harnessBaseUrl || fallback;
+    return getDeepSeekProviderSettings(settings).harnessBaseUrl || fallback;
   } catch {
     return fallback;
   }

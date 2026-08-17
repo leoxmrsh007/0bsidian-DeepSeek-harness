@@ -73,9 +73,9 @@ describe('interrupt utils', () => {
   });
 
   describe('stripLegacyInterruptIndicator', () => {
-    it('removes only the trailing Claudian-owned interruption marker', () => {
+    it('removes only the trailing DeepSeek Harness-owned interruption marker', () => {
       const marker =
-        '<span class="claudian-interrupted">Interrupted</span> <span class="claudian-interrupted-hint">· What should Claudian do instead?</span>';
+        '<span class="claudian-interrupted">Interrupted</span> <span class="claudian-interrupted-hint">· What should DeepSeek Harness do instead?</span>';
 
       expect(stripLegacyInterruptIndicator(`Partial response\n\n${marker}`)).toEqual({
         content: 'Partial response',

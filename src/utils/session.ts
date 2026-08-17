@@ -1,5 +1,5 @@
 /**
- * Claudian - Session Utilities
+ * DeepSeek Harness - Session Utilities
  *
  * Session recovery and history reconstruction.
  */

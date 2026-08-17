@@ -1,6 +1,6 @@
 import type { ProviderCapabilities } from '../../core/providers/types';
 
-export const CLAUDE_PROVIDER_CAPABILITIES: Readonly<ProviderCapabilities> = Object.freeze({
+export const DEEPSEEK_PROVIDER_CAPABILITIES: Readonly<ProviderCapabilities> = Object.freeze({
   providerId: 'deepseek',
   // The harness session is stateful; claudian persists its own message
   // projection. Native-history replay is a no-op for now.

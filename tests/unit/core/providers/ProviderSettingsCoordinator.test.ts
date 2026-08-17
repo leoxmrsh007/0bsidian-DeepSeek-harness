@@ -2,7 +2,7 @@ import '@/providers';
 
 import { ProviderRegistry } from '@/core/providers/ProviderRegistry';
 import { ProviderSettingsCoordinator } from '@/core/providers/ProviderSettingsCoordinator';
-import { DEFAULT_CLAUDE_PROVIDER_SETTINGS } from '@/providers/deepseek/settings';
+import { DEFAULT_DEEPSEEK_PROVIDER_SETTINGS } from '@/providers/deepseek/settings';
 
 describe('ProviderSettingsCoordinator', () => {
   describe('normalizeProviderSelection', () => {
@@ -33,7 +33,7 @@ describe('ProviderSettingsCoordinator', () => {
     it('preflights the sole enabled provider without mutating settings', () => {
       const settings: Record<string, unknown> = {
         providerConfigs: {
-          deepseek: { ...DEFAULT_CLAUDE_PROVIDER_SETTINGS, enabled: true },
+          deepseek: { ...DEFAULT_DEEPSEEK_PROVIDER_SETTINGS, enabled: true },
         },
       };
 
@@ -56,7 +56,7 @@ describe('ProviderSettingsCoordinator', () => {
         model: 'deepseek-v4-flash',
         titleGenerationModel: '',
         providerConfigs: {
-          deepseek: { ...DEFAULT_CLAUDE_PROVIDER_SETTINGS, enabled: true },
+          deepseek: { ...DEFAULT_DEEPSEEK_PROVIDER_SETTINGS, enabled: true },
         },
       };
 

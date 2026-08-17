@@ -174,7 +174,7 @@ describe('ConversationController', () => {
 
         const welcomeEl = deps.getWelcomeEl()!;
         expect(welcomeEl.querySelector('.claudian-welcome-brand')?.textContent)
-          .toBe('Claudian');
+          .toBe('DeepSeek Harness');
         expect(welcomeEl.querySelector('.claudian-welcome-greeting')).not.toBeNull();
       });
 

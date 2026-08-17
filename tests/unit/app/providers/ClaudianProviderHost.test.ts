@@ -1,8 +1,8 @@
-import { ClaudianProviderHost } from '@/app/providers/ClaudianProviderHost';
+import { DeepSeekHarnessProviderHost } from '@/app/providers/DeepSeekHarnessProviderHost';
 import type { ProviderExecutionTransitionScope } from '@/core/execution';
-import type ClaudianPlugin from '@/main';
+import type DeepSeekHarnessPlugin from '@/main';
 
-function createPlugin(overrides: Record<string, unknown> = {}): ClaudianPlugin {
+function createPlugin(overrides: Record<string, unknown> = {}): DeepSeekHarnessPlugin {
   return {
     app: {},
     executionLifecycleRegistry: {},
@@ -26,10 +26,10 @@ function createPlugin(overrides: Record<string, unknown> = {}): ClaudianPlugin {
     getAllViews: jest.fn(() => []),
     getView: jest.fn(() => null),
     ...overrides,
-  } as unknown as ClaudianPlugin;
+  } as unknown as DeepSeekHarnessPlugin;
 }
 
-describe('ClaudianProviderHost', () => {
+describe('DeepSeekHarnessProviderHost', () => {
   it('delegates provider capabilities without exposing plugin lifecycle APIs', async () => {
     const trace: string[] = [];
     const plugin = createPlugin({
@@ -40,7 +40,7 @@ describe('ClaudianProviderHost', () => {
         return '/usr/bin/codex';
       }),
     });
-    const host = new ClaudianProviderHost(plugin);
+    const host = new DeepSeekHarnessProviderHost(plugin);
 
     await host.saveSettings();
     await host.applyEnvironmentVariables('provider:codex', 'OPENAI_API_KEY=test');
@@ -56,7 +56,7 @@ describe('ClaudianProviderHost', () => {
     const plugin = createPlugin({
       notifyProviderChatOptionsChanged,
     });
-    const host = new ClaudianProviderHost(plugin);
+    const host = new DeepSeekHarnessProviderHost(plugin);
 
     host.notifyProviderChatOptionsChanged('codex');
 
@@ -73,7 +73,7 @@ describe('ClaudianProviderHost', () => {
       executionLifecycleRegistry,
       runProviderExecutionTransition,
     });
-    const host = new ClaudianProviderHost(plugin);
+    const host = new DeepSeekHarnessProviderHost(plugin);
 
     expect(host.executionLifecycleRegistry).toBe(executionLifecycleRegistry);
     await expect(
@@ -105,7 +105,7 @@ describe('ClaudianProviderHost', () => {
     const onApplied = jest.fn();
     const applyProviderRuntimeSettings = jest.fn(async () => undefined);
     const plugin = createPlugin({ applyProviderRuntimeSettings });
-    const host = new ClaudianProviderHost(plugin);
+    const host = new DeepSeekHarnessProviderHost(plugin);
 
     await host.applyProviderRuntimeSettings(['codex'], mutation, onApplied);
 

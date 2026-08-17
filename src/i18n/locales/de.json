@@ -71,7 +71,7 @@
     }
   },
   "settings": {
-    "title": "Claudian Einstellungen",
+    "title": "DeepSeek Harness Einstellungen",
     "tabs": {
       "general": "Allgemein",
       "claude": "Claude",
@@ -85,7 +85,7 @@
     "models": "Modelle",
     "experimental": "Experimentell",
     "userName": {
-      "name": "Wie soll Claudian dich nennen?",
+      "name": "Wie soll DeepSeek Harness dich nennen?",
       "desc": "Dein Name für personalisierte Begrüßungen (leer lassen für allgemeine Begrüßungen)"
     },
     "excludedTags": {
@@ -164,13 +164,13 @@
     },
     "hiddenSlashCommands": {
       "name": "Ausgeblendete Befehle und Fähigkeiten",
-      "desc": "Bestimmte Befehle und Fähigkeiten aus dem Dropdown ausblenden. Nützlich, um Claude Code-Einträge auszublenden, die für Claudian nicht relevant sind. Gib Namen ohne führenden Schrägstrich ein, einen pro Zeile.",
+      "desc": "Bestimmte Befehle und Fähigkeiten aus dem Dropdown ausblenden. Nützlich, um Claude Code-Einträge auszublenden, die für DeepSeek Harness nicht relevant sind. Gib Namen ohne führenden Schrägstrich ein, einen pro Zeile.",
       "placeholder": "commit\nbuild\ntest"
     },
     "mcpServers": {
       "name": "MCP-Server",
       "descBeforeCommand": "Claude Code verwaltet MCP-Server über seine eigene CLI. Konfiguriere mit ",
-      "descAfterCommand": ", dann sind sie in Claudian verfügbar. ",
+      "descAfterCommand": ", dann sind sie in DeepSeek Harness verfügbar. ",
       "learnMore": "Mehr erfahren"
     },
     "plugins": {
@@ -311,7 +311,7 @@
       "desc": "Write- und Edit-Diffs beim ersten Erscheinen ausgeklappt anzeigen."
     },
     "chatViewPlacement": {
-      "name": "Claudian öffnen in",
+      "name": "DeepSeek Harness öffnen in",
       "desc": "Wählen Sie, wo das Chat-Panel beim Erstellen geöffnet wird",
       "rightSidebar": "Rechte Seitenleiste",
       "leftSidebar": "Linke Seitenleiste",
@@ -334,13 +334,13 @@
     "providerEnablement": {
       "name": "{provider} aktivieren",
       "desc": "Aktivierte {provider}-Modelle für neue Unterhaltungen verfügbar machen. Bestehende Sitzungen bleiben beim Deaktivieren erhalten.",
-      "lastProviderWarning": "Damit Claudian funktioniert, muss mindestens ein Anbieter aktiviert bleiben.",
+      "lastProviderWarning": "Damit DeepSeek Harness funktioniert, muss mindestens ein Anbieter aktiviert bleiben.",
       "noModelsWarning": "Keine {provider}-Modelle sind aktiviert. Aktivieren Sie unten unter „Modelle“ mindestens ein Modell."
     },
     "codex": {
       "installationMethod": {
         "name": "Installationsmethode",
-        "desc": "Wie Claudian Codex unter Windows starten soll. Native Windows verwendet einen Windows-Programmpfad. WSL startet die Linux-CLI in einer ausgewählten Distribution.",
+        "desc": "Wie DeepSeek Harness Codex unter Windows starten soll. Native Windows verwendet einen Windows-Programmpfad. WSL startet die Linux-CLI in einer ausgewählten Distribution.",
         "nativeWindows": "Natives Windows",
         "wsl": "WSL"
       },
@@ -391,7 +391,7 @@
       },
       "mcp": {
         "descBeforeCommand": "Codex verwaltet MCP-Server über seine eigene CLI. Konfiguriere mit ",
-        "descAfterCommand": ", dann sind sie in Claudian verfügbar. ",
+        "descAfterCommand": ", dann sind sie in DeepSeek Harness verfügbar. ",
         "learnMore": "Mehr erfahren"
       },
       "environment": {

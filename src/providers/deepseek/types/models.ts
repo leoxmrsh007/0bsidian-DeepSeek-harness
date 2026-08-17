@@ -6,21 +6,21 @@ import {
   DEFAULT_REASONING_VALUE,
   formatReasoningValueLabel,
 } from '../../../core/providers/reasoning';
-import { toClaudeRuntimeModelId } from '../modelSelection';
+import { toDeepSeekRuntimeModelId } from '../modelSelection';
 import {
-  CLAUDE_MODEL_TIER_DEFINITIONS,
-  CLAUDE_MODEL_TIER_PATTERN,
-  type ClaudeModelTier,
-  getClaudeModelTierDefinition,
+  DEEPSEEK_MODEL_TIER_DEFINITIONS,
+  DEEPSEEK_MODEL_TIER_PATTERN,
+  type DeepSeekModelTier,
+  getDeepSeekModelTierDefinition,
   isVersionAtLeast,
-  resolveClaudeModelTierAlias,
+  resolveDeepSeekModelTierAlias,
 } from '../modelTiers';
 
 /** Model identifier (string to support custom models via environment variables). */
-export type ClaudeModel = string;
+export type DeepSeekModel = string;
 
-export const DEFAULT_CLAUDE_MODELS: { value: ClaudeModel; label: string; description: string }[] =
-  CLAUDE_MODEL_TIER_DEFINITIONS.map(({ id, label, description }) => ({
+export const DEFAULT_DEEPSEEK_MODELS: { value: DeepSeekModel; label: string; description: string }[] =
+  DEEPSEEK_MODEL_TIER_DEFINITIONS.map(({ id, label, description }) => ({
     value: id,
     label,
     description,
@@ -39,36 +39,36 @@ export const EFFORT_LEVELS: { value: EffortLevel; label: string }[] =
 
 /** Default effort level per model tier. */
 export const DEFAULT_EFFORT_LEVEL: Record<string, EffortLevel> = Object.fromEntries(
-  CLAUDE_MODEL_TIER_DEFINITIONS.map(definition => [definition.id, DEFAULT_REASONING_VALUE]),
+  DEEPSEEK_MODEL_TIER_DEFINITIONS.map(definition => [definition.id, DEFAULT_REASONING_VALUE]),
 );
 
 function normalizeModelId(model: string): string {
-  return toClaudeRuntimeModelId(model).trim().toLowerCase();
+  return toDeepSeekRuntimeModelId(model).trim().toLowerCase();
 }
 
-export function normalizeLegacyClaudeModelAlias(model: string): string {
-  return resolveClaudeModelTierAlias(normalizeModelId(model)) ?? model;
+export function normalizeLegacyDeepSeekModelAlias(model: string): string {
+  return resolveDeepSeekModelTierAlias(normalizeModelId(model)) ?? model;
 }
 
-interface VersionedClaudeModel {
-  tier: ClaudeModelTier;
+interface VersionedDeepSeekModel {
+  tier: DeepSeekModelTier;
   major: number;
   minor: number;
 }
 
-function parseVersionedClaudeModel(model: string): VersionedClaudeModel | null {
+function parseVersionedDeepSeekModel(model: string): VersionedDeepSeekModel | null {
   const normalized = normalizeModelId(model);
   const canonicalStart = normalized.indexOf('claude-');
   const canonical = canonicalStart >= 0 ? normalized.slice(canonicalStart) : normalized;
   const match = canonical.match(
-    new RegExp(`^claude-(${CLAUDE_MODEL_TIER_PATTERN})-(\\d+)(?:-(\\d+))?`),
+    new RegExp(`^claude-(${DEEPSEEK_MODEL_TIER_PATTERN})-(\\d+)(?:-(\\d+))?`),
   );
   if (!match) {
     return null;
   }
 
   return {
-    tier: match[1] as ClaudeModelTier,
+    tier: match[1] as DeepSeekModelTier,
     major: Number(match[2]),
     minor: match[3] === undefined ? 0 : Number(match[3]),
   };
@@ -91,11 +91,11 @@ function resolveCustomContextLimit(
     return exactLimit;
   }
 
-  const normalizedModel = normalizeLegacyClaudeModelAlias(normalizeModelId(model));
+  const normalizedModel = normalizeLegacyDeepSeekModelAlias(normalizeModelId(model));
   const matchingLimits = Object.entries(customLimits)
     .filter(([key, limit]) =>
       key !== model
-      && normalizeLegacyClaudeModelAlias(normalizeModelId(key)) === normalizedModel
+      && normalizeLegacyDeepSeekModelAlias(normalizeModelId(key)) === normalizedModel
       && isValidContextLimit(limit)
     )
     .map(([, limit]) => limit);
@@ -103,8 +103,8 @@ function resolveCustomContextLimit(
   return matchingLimits.length === 1 ? matchingLimits[0] : null;
 }
 
-export function isDefaultClaudeModel(model: string): boolean {
-  return resolveClaudeModelTierAlias(normalizeModelId(model)) !== null;
+export function isDefaultDeepSeekModel(model: string): boolean {
+  return resolveDeepSeekModelTierAlias(normalizeModelId(model)) !== null;
 }
 
 /**
@@ -114,16 +114,16 @@ export function isDefaultClaudeModel(model: string): boolean {
  */
 export function supportsXHighEffort(model: string): boolean {
   const normalized = normalizeModelId(model);
-  const aliasTier = resolveClaudeModelTierAlias(normalized);
+  const aliasTier = resolveDeepSeekModelTierAlias(normalized);
   if (aliasTier) {
-    return getClaudeModelTierDefinition(aliasTier).aliasSupportsXHigh;
+    return getDeepSeekModelTierDefinition(aliasTier).aliasSupportsXHigh;
   }
 
-  const versionedModel = parseVersionedClaudeModel(normalized);
+  const versionedModel = parseVersionedDeepSeekModel(normalized);
   if (!versionedModel) {
     return true;
   }
-  const definition = getClaudeModelTierDefinition(versionedModel.tier);
+  const definition = getDeepSeekModelTierDefinition(versionedModel.tier);
   return isVersionAtLeast(
     versionedModel.major,
     versionedModel.minor,
@@ -145,7 +145,7 @@ export function normalizeEffortLevel(
     return effortLevel as EffortLevel;
   }
 
-  const modelTier = resolveClaudeModelTierAlias(normalizeModelId(model));
+  const modelTier = resolveDeepSeekModelTierAlias(normalizeModelId(model));
   return (modelTier && DEFAULT_EFFORT_LEVEL[modelTier]) ?? DEFAULT_REASONING_VALUE;
 }
 
@@ -168,16 +168,16 @@ export interface ContextWindowResolution {
 
 function isCurrentOneMillionContextModel(model: string): boolean {
   const normalized = normalizeModelId(model);
-  const aliasTier = resolveClaudeModelTierAlias(normalized);
+  const aliasTier = resolveDeepSeekModelTierAlias(normalized);
   if (aliasTier) {
-    return getClaudeModelTierDefinition(aliasTier).aliasHasOneMillionContext;
+    return getDeepSeekModelTierDefinition(aliasTier).aliasHasOneMillionContext;
   }
 
-  const versionedModel = parseVersionedClaudeModel(normalized);
+  const versionedModel = parseVersionedDeepSeekModel(normalized);
   if (!versionedModel) {
     return false;
   }
-  const definition = getClaudeModelTierDefinition(versionedModel.tier);
+  const definition = getDeepSeekModelTierDefinition(versionedModel.tier);
   return isVersionAtLeast(
     versionedModel.major,
     versionedModel.minor,

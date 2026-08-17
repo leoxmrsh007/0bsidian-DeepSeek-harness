@@ -3,8 +3,8 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 
 import type { ProviderConversationSessionAvailability } from '../../../core/providers/types';
-import type { ClaudeConfigDirContext } from '../config/ClaudeConfigDir';
-import { resolveClaudeConfigDir } from '../config/ClaudeConfigDir';
+import type { DeepSeekConfigDirContext } from '../config/DeepSeekConfigDir';
+import { resolveDeepSeekConfigDir } from '../config/DeepSeekConfigDir';
 import type { SDKNativeMessage, SDKSessionReadResult } from './sdkHistoryTypes';
 
 export interface SDKSessionLocation {
@@ -22,8 +22,8 @@ export function encodeVaultPathForSDK(vaultPath: string): string {
   return absolutePath.replace(/[^a-zA-Z0-9]/g, '-');
 }
 
-export function getSDKProjectsPath(context?: ClaudeConfigDirContext): string {
-  return path.join(resolveClaudeConfigDir(context), 'projects');
+export function getSDKProjectsPath(context?: DeepSeekConfigDirContext): string {
+  return path.join(resolveDeepSeekConfigDir(context), 'projects');
 }
 
 /** Validates an identifier for safe use in filesystem paths (no traversal, bounded length). */
@@ -44,7 +44,7 @@ export function isValidSessionId(sessionId: string): boolean {
 export function getSDKSessionPath(
   vaultPath: string,
   sessionId: string,
-  context?: ClaudeConfigDirContext,
+  context?: DeepSeekConfigDirContext,
 ): string {
   if (!isValidSessionId(sessionId)) {
     throw new Error(`Invalid session ID: ${sessionId}`);
@@ -58,7 +58,7 @@ export function getSDKSessionPath(
 export function sdkSessionExists(
   vaultPath: string,
   sessionId: string,
-  context?: ClaudeConfigDirContext,
+  context?: DeepSeekConfigDirContext,
 ): boolean {
   try {
     const sessionPath = getSDKSessionPath(vaultPath, sessionId, context);
@@ -78,7 +78,7 @@ function hasFileSystemErrorCode(error: unknown, code: string): boolean {
 export async function locateSDKSessions(
   vaultPath: string,
   sessionIds: string[],
-  context?: ClaudeConfigDirContext,
+  context?: DeepSeekConfigDirContext,
 ): Promise<Map<string, SDKSessionLocation>> {
   const locations = new Map<string, SDKSessionLocation>();
   const currentPaths = new Map<string, string>();
@@ -165,7 +165,7 @@ export async function locateSDKSessions(
 export async function locateSDKSession(
   vaultPath: string,
   sessionId: string,
-  context?: ClaudeConfigDirContext,
+  context?: DeepSeekConfigDirContext,
 ): Promise<SDKSessionLocation> {
   return (await locateSDKSessions(vaultPath, [sessionId], context)).get(sessionId)
     ?? { availability: 'unknown' };
@@ -174,7 +174,7 @@ export async function locateSDKSession(
 export async function getSDKSessionAvailability(
   vaultPath: string,
   sessionId: string,
-  context?: ClaudeConfigDirContext,
+  context?: DeepSeekConfigDirContext,
 ): Promise<ProviderConversationSessionAvailability> {
   return (await locateSDKSession(vaultPath, sessionId, context)).availability;
 }
@@ -182,7 +182,7 @@ export async function getSDKSessionAvailability(
 export async function readSDKSession(
   vaultPath: string,
   sessionId: string,
-  context?: ClaudeConfigDirContext,
+  context?: DeepSeekConfigDirContext,
 ): Promise<SDKSessionReadResult> {
   try {
     const sessionPath = getSDKSessionPath(vaultPath, sessionId, context);

@@ -1,5 +1,5 @@
 /**
- * Claudian - Date Utilities
+ * DeepSeek Harness - Date Utilities
  *
  * Date formatting helpers for system prompts.
  */

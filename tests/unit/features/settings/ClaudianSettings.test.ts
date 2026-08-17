@@ -1,8 +1,8 @@
 import '@/providers';
 
-import { ClaudianSettingTab } from '@/features/settings/ClaudianSettings';
+import { DeepSeekHarnessSettingTab } from '@/features/settings/DeepSeekHarnessSettings';
 
-describe('ClaudianSettingTab model option updates', () => {
+describe('DeepSeekHarnessSettingTab model option updates', () => {
   it('refreshes provider-scoped chat selectors and the live title model menu together', () => {
     const refreshModelSelector = jest.fn();
     const notifyProviderChatOptionsChanged = jest.fn();
@@ -14,7 +14,7 @@ describe('ClaudianSettingTab model option updates', () => {
         getAdapter: jest.fn(() => ({})),
       },
     };
-    const tab = new ClaudianSettingTab({} as any, plugin as any);
+    const tab = new DeepSeekHarnessSettingTab({} as any, plugin as any);
     const refreshTitleModelOptions = jest.fn();
     (tab as any).refreshTitleModelOptions = refreshTitleModelOptions;
 
@@ -37,7 +37,7 @@ describe('ClaudianSettingTab model option updates', () => {
         getAdapter: jest.fn(() => ({})),
       },
     };
-    const tab = new ClaudianSettingTab({} as any, plugin as any);
+    const tab = new DeepSeekHarnessSettingTab({} as any, plugin as any);
 
     await (tab as any).restartServiceForPromptChange();
 

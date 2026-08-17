@@ -7,14 +7,14 @@ import type { SharedAppStorage } from '../../core/bootstrap/storage';
 import { normalizeTabManagerState } from '../../core/bootstrap/tabManagerState';
 import type { AppTabManagerState } from '../../core/providers/types';
 import { VaultFileAdapter } from '../../core/storage/VaultFileAdapter';
-import { ClaudianSettingsStorage, type StoredClaudianSettings } from '../settings/ClaudianSettingsStorage';
+import { DeepSeekHarnessSettingsStorage, type StoredDeepSeekHarnessSettings } from '../settings/DeepSeekHarnessSettingsStorage';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
 export class SharedStorageService implements SharedAppStorage {
-  readonly claudianSettings: ClaudianSettingsStorage;
+  readonly deepseekHarnessSettings: DeepSeekHarnessSettingsStorage;
   readonly sessions: SessionStorage;
   readonly conversationPersistence: ConversationPersistenceStore;
 
@@ -24,18 +24,18 @@ export class SharedStorageService implements SharedAppStorage {
   constructor(plugin: Plugin) {
     this.plugin = plugin;
     this.adapter = new VaultFileAdapter(plugin.app);
-    this.claudianSettings = new ClaudianSettingsStorage(this.adapter);
+    this.deepseekHarnessSettings = new DeepSeekHarnessSettingsStorage(this.adapter);
     this.sessions = new SessionStorage(this.adapter);
     this.conversationPersistence = new ConversationPersistenceStore(this.adapter);
   }
 
-  async initialize(): Promise<{ claudian: Record<string, unknown> }> {
-    const claudian = await this.claudianSettings.load();
-    return { claudian };
+  async initialize(): Promise<{ storedSettings: Record<string, unknown> }> {
+    const storedSettings = await this.deepseekHarnessSettings.load();
+    return { storedSettings };
   }
 
-  async saveClaudianSettings(settings: Record<string, unknown>): Promise<void> {
-    await this.claudianSettings.save(settings as StoredClaudianSettings);
+  async saveDeepSeekHarnessSettings(settings: Record<string, unknown>): Promise<void> {
+    await this.deepseekHarnessSettings.save(settings as StoredDeepSeekHarnessSettings);
   }
 
   async setTabManagerState(state: AppTabManagerState): Promise<void> {

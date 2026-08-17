@@ -3,58 +3,43 @@ import { hasStoredConfigNormalization } from '../../core/providers/settings/stor
 import type { ProviderModule } from '../../core/providers/types';
 import { parseEnvironmentVariables } from '../../utils/env';
 import {
-  claudeWorkspaceRegistration,
-} from './app/ClaudeWorkspaceServices';
-import { CLAUDE_PROVIDER_CAPABILITIES } from './capabilities';
-import { claudeSettingsReconciler } from './env/ClaudeSettingsReconciler';
+  deepseekWorkspaceRegistration,
+} from './app/DeepSeekWorkspaceServices';
+import { DEEPSEEK_PROVIDER_CAPABILITIES } from './capabilities';
+import { deepseekSettingsReconciler } from './env/DeepSeekSettingsReconciler';
 import { HarnessExecutionBackend } from './harness/HarnessExecutionBackend';
-import { ClaudeSubagentHistoryService } from './history/ClaudeSubagentHistoryService';
+import { DeepSeekSubagentHistoryService } from './history/DeepSeekSubagentHistoryService';
 import { HarnessConversationHistoryService } from './history/HarnessConversationHistoryService';
-import { toClaudeRuntimeModelId } from './modelSelection';
-import { ClaudeTaskResultInterpreter } from './runtime/ClaudeTaskResultInterpreter';
-import { getClaudeProviderSettings, updateClaudeProviderSettings } from './settings';
-import { claudeSubagentAdapter } from './subagentAdapter';
-import { claudeChatUIConfig } from './ui/ClaudeChatUIConfig';
-
-const LEGACY_CLAUDE_1M_SETTINGS = ['enableOpus1M', 'enableSonnet1M'] as const;
+import { toDeepSeekRuntimeModelId } from './modelSelection';
+import { DeepSeekTaskResultInterpreter } from './runtime/DeepSeekTaskResultInterpreter';
+import { getDeepSeekProviderSettings, updateDeepSeekProviderSettings } from './settings';
+import { deepseekSubagentAdapter } from './subagentAdapter';
+import { deepseekChatUIConfig } from './ui/DeepSeekChatUIConfig';
 
 export const deepseekProviderRegistration: ProviderModule = {
   id: 'deepseek',
   displayName: 'DeepSeek',
   blankTabOrder: 19,
-  isEnabled: settings => getClaudeProviderSettings(settings).enabled,
-  setEnabled: (settings, enabled) => updateClaudeProviderSettings(settings, { enabled }),
-  capabilities: CLAUDE_PROVIDER_CAPABILITIES,
+  isEnabled: settings => getDeepSeekProviderSettings(settings).enabled,
+  setEnabled: (settings, enabled) => updateDeepSeekProviderSettings(settings, { enabled }),
+  capabilities: DEEPSEEK_PROVIDER_CAPABILITIES,
   environmentKeyPatterns: [/^DEEPSEEK_/i, /^DSH_/i],
-  chatUIConfig: claudeChatUIConfig,
-  settingsReconciler: claudeSettingsReconciler,
+  chatUIConfig: deepseekChatUIConfig,
+  settingsReconciler: deepseekSettingsReconciler,
   settingsStorage: {
     hostScopedFields: ['cliPathsByHost'],
-    legacyTopLevelFields: [
-      'claudeSafeMode',
-      'claudeCliPath',
-      'claudeCliPathsByHost',
-      'loadUserClaudeSettings',
-      'lastClaudeModel',
-      'enableChrome',
-      'enableBangBash',
-      ...LEGACY_CLAUDE_1M_SETTINGS,
-      'environmentVariables',
-      'lastEnvHash',
-      'harnessBaseUrl',
-    ],
+    legacyTopLevelFields: [],
     normalizeStored(target, stored) {
       const storedConfig = getProviderConfig(stored, 'deepseek');
-      const removedLegacy1MSettings = LEGACY_CLAUDE_1M_SETTINGS.some(key => key in storedConfig);
-      updateClaudeProviderSettings(target, getClaudeProviderSettings(stored));
-      return removedLegacy1MSettings || hasStoredConfigNormalization(
+      updateDeepSeekProviderSettings(target, getDeepSeekProviderSettings(stored));
+      return hasStoredConfigNormalization(
         storedConfig,
         getProviderConfig(target, 'deepseek'),
       );
     },
   },
   createExecutionBackend: (plugin) => {
-    const settings = getClaudeProviderSettings(plugin.settings);
+    const settings = getDeepSeekProviderSettings(plugin.settings);
     return new HarnessExecutionBackend({
       baseUrl: settings.harnessBaseUrl,
       launchConfig: {
@@ -64,11 +49,11 @@ export const deepseekProviderRegistration: ProviderModule = {
       },
     });
   },
-  createSubagentHistoryService: plugin => new ClaudeSubagentHistoryService(plugin),
+  createSubagentHistoryService: plugin => new DeepSeekSubagentHistoryService(plugin),
   resolveTitleGenerationModel: (plugin) => {
     const titleModel = plugin.settings.titleGenerationModel;
-    if (titleModel && claudeChatUIConfig.ownsModel(titleModel, plugin.settings)) {
-      return toClaudeRuntimeModelId(titleModel);
+    if (titleModel && deepseekChatUIConfig.ownsModel(titleModel, plugin.settings)) {
+      return toDeepSeekRuntimeModelId(titleModel);
     }
     const envVars = parseEnvironmentVariables(
       plugin.getActiveEnvironmentVariables('deepseek'),
@@ -76,7 +61,7 @@ export const deepseekProviderRegistration: ProviderModule = {
     return envVars.ANTHROPIC_DEFAULT_HAIKU_MODEL || 'deepseek-v4-flash';
   },
   historyService: new HarnessConversationHistoryService(),
-  taskResultInterpreter: new ClaudeTaskResultInterpreter(),
-  subagentAdapter: claudeSubagentAdapter,
-  workspace: claudeWorkspaceRegistration,
+  taskResultInterpreter: new DeepSeekTaskResultInterpreter(),
+  subagentAdapter: deepseekSubagentAdapter,
+  workspace: deepseekWorkspaceRegistration,
 };

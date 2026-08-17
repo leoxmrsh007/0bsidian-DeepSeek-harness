@@ -1,5 +1,5 @@
 import { BUILT_IN_PROVIDER_MODULES } from '@/providers';
-import { getClaudeProviderSettings } from '@/providers/deepseek/settings';
+import { getDeepSeekProviderSettings } from '@/providers/deepseek/settings';
 import { getBuiltInProviderDefaultConfigs } from '@/providers/defaultProviderConfigs';
 
 function getProviderConfig(
@@ -52,7 +52,7 @@ describe('built-in ProviderModule catalog', () => {
     for (const module of BUILT_IN_PROVIDER_MODULES) {
       expect(module.isEnabled(malformedSettings)).toBe(defaultEnabled[module.id]);
     }
-    expect(getClaudeProviderSettings(malformedSettings).safeMode).toBe('default');
+    expect(getDeepSeekProviderSettings(malformedSettings).safeMode).toBe('default');
 
     const normalizedSettings: Record<string, unknown> = {};
     for (const module of BUILT_IN_PROVIDER_MODULES) {
