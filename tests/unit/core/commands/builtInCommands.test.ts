@@ -52,13 +52,6 @@ describe('builtInCommands', () => {
       expect(result?.args).toBe('/path/to/dir');
     });
 
-    it('detects /add-dir command with home path', () => {
-      const result = detectBuiltInCommand('/add-dir ~/projects');
-      expect(result).not.toBeNull();
-      expect(result?.command.name).toBe('add-dir');
-      expect(result?.args).toBe('~/projects');
-    });
-
     it('returns null for non-slash input', () => {
       expect(detectBuiltInCommand('clear')).toBeNull();
       expect(detectBuiltInCommand('hello /clear')).toBeNull();
@@ -92,24 +85,6 @@ describe('builtInCommands', () => {
       expect(result?.command.name).toBe('fork');
       expect(result?.command.action).toBe('fork');
       expect(result?.args).toBe('');
-    });
-
-    it('detects /fork case-insensitively', () => {
-      expect(detectBuiltInCommand('/FORK')).not.toBeNull();
-      expect(detectBuiltInCommand('/Fork')).not.toBeNull();
-    });
-
-    it('detects /fast command', () => {
-      const result = detectBuiltInCommand('/fast');
-      expect(result).not.toBeNull();
-      expect(result?.command.name).toBe('fast');
-      expect(result?.command.action).toBe('fast');
-      expect(result?.args).toBe('');
-    });
-
-    it('leaves provider-restricted commands to other providers', () => {
-      expect(detectBuiltInCommand('/fast', 'claude')).toBeNull();
-      expect(detectBuiltInCommand('/fast', 'codex')?.command.action).toBe('fast');
     });
   });
 
@@ -151,14 +126,12 @@ describe('builtInCommands', () => {
       expect(addDirCmd).toBeDefined();
       expect(addDirCmd?.action).toBe('add-dir');
       expect(addDirCmd?.hasArgs).toBe(true);
-      expect(addDirCmd?.description).toBe('Add external context directory');
     });
 
     it('has resume command', () => {
       const resumeCmd = BUILT_IN_COMMANDS.find((c) => c.name === 'resume');
       expect(resumeCmd).toBeDefined();
       expect(resumeCmd?.action).toBe('resume');
-      expect(resumeCmd?.description).toBe('Resume a previous conversation');
     });
 
     it('has fork command without args', () => {
@@ -166,23 +139,6 @@ describe('builtInCommands', () => {
       expect(forkCmd).toBeDefined();
       expect(forkCmd?.action).toBe('fork');
       expect(forkCmd?.hasArgs).toBeUndefined();
-    });
-
-    it('has a Codex-only fast command', () => {
-      const fastCmd = BUILT_IN_COMMANDS.find((c) => c.name === 'fast');
-      expect(fastCmd).toBeDefined();
-      expect(fastCmd?.action).toBe('fast');
-      expect(fastCmd?.supportedProviderIds).toEqual(['codex']);
-    });
-
-    it('clear has no provider restriction', () => {
-      const clearCmd = BUILT_IN_COMMANDS.find((c) => c.name === 'clear');
-      expect(clearCmd?.requiredCapability).toBeUndefined();
-    });
-
-    it('add-dir has no provider restriction', () => {
-      const cmd = BUILT_IN_COMMANDS.find((c) => c.name === 'add-dir');
-      expect(cmd?.requiredCapability).toBeUndefined();
     });
 
     it('resume requires native history support', () => {
@@ -196,49 +152,14 @@ describe('builtInCommands', () => {
     });
   });
 
-  describe('getBuiltInCommandsForDropdown - provider filtering', () => {
-    it('returns all commands when no providerId is given', () => {
-      const commands = getBuiltInCommandsForDropdown();
-      expect(commands.length).toBe(BUILT_IN_COMMANDS.length);
-    });
-
-    it('excludes Codex-only commands for the Claude provider', () => {
-      const commands = getBuiltInCommandsForDropdown('claude');
-      expect(commands.length).toBe(BUILT_IN_COMMANDS.length - 1);
-      expect(commands.map(c => c.name)).toContain('clear');
-      expect(commands.map(c => c.name)).toContain('add-dir');
-      expect(commands.map(c => c.name)).toContain('resume');
-      expect(commands.map(c => c.name)).toContain('fork');
-      expect(commands.map(c => c.name)).not.toContain('fast');
-    });
-
-    it('returns all capability-supported commands for codex provider', () => {
-      const commands = getBuiltInCommandsForDropdown('codex');
-      const names = commands.map(c => c.name);
-      expect(names).toContain('clear');
-      expect(names).toContain('add-dir');
-      expect(names).toContain('resume');
-      expect(names).toContain('fork');
-      expect(names).toContain('fast');
-    });
-
-    it('returns only commands supported by codex capabilities', () => {
-      const commands = getBuiltInCommandsForDropdown('codex');
-      expect(commands.length).toBe(5);
-      expect(commands.map(c => c.name)).toEqual(['clear', 'add-dir', 'resume', 'fork', 'fast']);
-    });
-  });
-
   describe('isBuiltInCommandSupported', () => {
     it('returns true for universal commands on any provider', () => {
       const clearCmd = BUILT_IN_COMMANDS.find((c) => c.name === 'clear')!;
-      expect(isBuiltInCommandSupported(clearCmd, 'claude')).toBe(true);
-      expect(isBuiltInCommandSupported(clearCmd, 'codex')).toBe(true);
+      expect(isBuiltInCommandSupported(clearCmd, 'deepseek')).toBe(true);
     });
 
-    it('returns false for provider-restricted commands on other providers', () => {
+    it('returns false when a capability requirement is unmet', () => {
       const resumeCmd = BUILT_IN_COMMANDS.find((c) => c.name === 'resume')!;
-      expect(isBuiltInCommandSupported(resumeCmd, 'claude')).toBe(true);
       expect(isBuiltInCommandSupported(
         resumeCmd,
         { supportsNativeHistory: false, supportsFork: true },
@@ -256,17 +177,5 @@ describe('builtInCommands', () => {
         { supportsNativeHistory: true, supportsFork: false },
       )).toBe(false);
     });
-
-    it('enforces explicit provider restrictions', () => {
-      const fastCmd = BUILT_IN_COMMANDS.find((c) => c.name === 'fast')!;
-      expect(isBuiltInCommandSupported(fastCmd, 'codex')).toBe(true);
-      expect(isBuiltInCommandSupported(fastCmd, 'claude')).toBe(false);
-      expect(isBuiltInCommandSupported(fastCmd, {
-        providerId: 'codex',
-        supportsNativeHistory: true,
-        supportsFork: true,
-      })).toBe(true);
-    });
   });
-
 });

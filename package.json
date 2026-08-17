@@ -1,7 +1,7 @@
 {
-  "name": "claudian",
-  "version": "2.1.3",
-  "description": "Claudian - Claude Code embedded in Obsidian sidebar",
+  "name": "deepseek-harness",
+  "version": "0.1.0",
+  "description": "DeepSeek Harness - the DeepSeek Harness coding agent embedded in Obsidian",
   "main": "main.js",
   "engines": {
     "node": ">=24 <25"
@@ -31,7 +31,7 @@
     "productivity",
     "ide"
   ],
-  "author": "Yishen Tu",
+  "author": "leo007",
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^10.0.1",

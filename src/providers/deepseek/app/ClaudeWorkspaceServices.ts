@@ -20,10 +20,11 @@ import {
 } from '../commands/ClaudeCommandCatalog';
 import { probeRuntimeCommands } from '../commands/probeRuntimeCommands';
 import { resolveClaudeConfigDir } from '../config/ClaudeConfigDir';
+import { HarnessAppLauncher } from '../harness/HarnessAppLauncher';
 import { PluginManager } from '../plugins/PluginManager';
 import { ClaudeCliResolver } from '../runtime/ClaudeCliResolver';
 import { StorageService } from '../storage/StorageService';
-import { claudeSettingsTabRenderer } from '../ui/ClaudeSettingsTab';
+import { deepseekSettingsTabRenderer } from '../ui/DeepSeekSettingsTab';
 
 export interface ClaudeWorkspaceServices extends ProviderWorkspaceServices {
   claudeStorage: StorageService;
@@ -89,7 +90,7 @@ export async function createClaudeWorkspaceServices(
     commandCatalog,
     vaultCommandRepository: commandCatalog,
     agentMentionProvider: agentManager,
-    settingsTabRenderer: claudeSettingsTabRenderer,
+    settingsTabRenderer: deepseekSettingsTabRenderer,
     refreshAgentMentions: async () => {
       await pluginManager.loadPlugins();
       await agentManager.loadAgents();
@@ -101,6 +102,7 @@ export async function createClaudeWorkspaceServices(
     dispose() {
       if (disposePromise) return disposePromise;
       unregisterTransitionHook();
+      HarnessAppLauncher.get().dispose();
       disposePromise = commandCatalog.dispose();
       return disposePromise;
     },

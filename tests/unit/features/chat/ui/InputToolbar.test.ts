@@ -1,7 +1,7 @@
 import {
-  TEST_CODEX_MODEL,
-  TEST_CODEX_MODEL_LABEL,
-} from '@test/helpers/codexModels';
+  TEST_DEEPSEEK_MODEL,
+  TEST_DEEPSEEK_MODEL_LABEL,
+} from '@test/helpers/deepseekModels';
 import { createMockEl } from '@test/helpers/MockElement';
 
 import type { UsageInfo } from '@/core/types';
@@ -125,7 +125,7 @@ function createMockUIConfig() {
       planLabel: 'PLAN',
     }),
     getServiceTierToggle: jest.fn().mockImplementation((settings: Record<string, unknown>) =>
-      settings.model === TEST_CODEX_MODEL
+      settings.model === TEST_DEEPSEEK_MODEL
         ? {
           inactiveValue: 'default',
           inactiveLabel: 'Standard',
@@ -363,7 +363,7 @@ describe('ModelSelector', () => {
     const groupedModels = [
       { value: 'opus', label: 'Opus', group: 'Claude' },
       { value: 'sonnet', label: 'Sonnet', group: 'Claude' },
-      { value: TEST_CODEX_MODEL, label: TEST_CODEX_MODEL_LABEL, group: 'Codex' },
+      { value: TEST_DEEPSEEK_MODEL, label: TEST_DEEPSEEK_MODEL_LABEL, group: 'Codex' },
     ];
     const uiConfig = createMockUIConfig();
     uiConfig.getModelOptions.mockReturnValue(groupedModels);
@@ -772,7 +772,7 @@ describe('ServiceTierToggle', () => {
     callbacks = createMockCallbacks({
       getUIConfig: jest.fn().mockReturnValue(uiConfig),
       getSettings: jest.fn().mockReturnValue({
-        model: TEST_CODEX_MODEL,
+        model: TEST_DEEPSEEK_MODEL,
         thinkingBudget: 'off',
         effortLevel: 'medium',
         serviceTier: 'default',
@@ -823,7 +823,7 @@ describe('ServiceTierToggle', () => {
 
   it('toggles from Fast to Standard on click', async () => {
     callbacks.getSettings.mockReturnValue({
-      model: TEST_CODEX_MODEL,
+      model: TEST_DEEPSEEK_MODEL,
       thinkingBudget: 'off',
       effortLevel: 'medium',
       serviceTier: 'fast',

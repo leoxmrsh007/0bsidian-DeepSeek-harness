@@ -1,4 +1,4 @@
-import { TEST_CODEX_MODEL } from '@test/helpers/codexModels';
+import { TEST_DEEPSEEK_MODEL } from '@test/helpers/deepseekModels';
 
 import { calculateUsagePercentage, recalculateUsageForModel } from '@/features/chat/utils/usageInfo';
 
@@ -14,7 +14,7 @@ describe('usageInfo', () => {
   describe('recalculateUsageForModel', () => {
     it('preserves an authoritative context window for the same model', () => {
       const usage = {
-        model: TEST_CODEX_MODEL,
+        model: TEST_DEEPSEEK_MODEL,
         inputTokens: 1000,
         cacheCreationInputTokens: 0,
         cacheReadInputTokens: 0,
@@ -24,9 +24,9 @@ describe('usageInfo', () => {
         percentage: 50,
       };
 
-      expect(recalculateUsageForModel(usage, TEST_CODEX_MODEL, 200000)).toEqual({
+      expect(recalculateUsageForModel(usage, TEST_DEEPSEEK_MODEL, 200000)).toEqual({
         ...usage,
-        model: TEST_CODEX_MODEL,
+        model: TEST_DEEPSEEK_MODEL,
         contextWindow: 258400,
         contextWindowIsAuthoritative: true,
         percentage: 50,
@@ -35,7 +35,7 @@ describe('usageInfo', () => {
 
     it('falls back to the UI context window when the model changes', () => {
       const usage = {
-        model: TEST_CODEX_MODEL,
+        model: TEST_DEEPSEEK_MODEL,
         inputTokens: 1000,
         cacheCreationInputTokens: 0,
         cacheReadInputTokens: 0,

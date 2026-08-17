@@ -340,7 +340,7 @@ function migrateLegacyChatModelSelection(
   const storedProviderId = trimStoredString(stored.settingsProvider);
   const providerId = registeredProviderIds.has(storedProviderId)
     ? storedProviderId
-    : 'claude';
+    : 'deepseek';
   if (!registeredProviderIds.has(providerId)) {
     return null;
   }

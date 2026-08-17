@@ -82,6 +82,11 @@ The desktop app owns the actual model route and agent preset; the provider's
 3. In Obsidian → Settings → Claudian → DeepSeek, set **DeepSeek Harness URL**
    (defaults to `http://127.0.0.1:3080`) and enable the provider.
 
+Auto-launch is enabled by default: when the endpoint is unreachable, the
+plugin resolves `dsh` on PATH and starts `dsh web --port <port>` in the
+background, reaping it on plugin unload. Disable **Auto-launch harness** to
+require a separately-running desktop app instead.
+
 ## Status / remaining work
 
 Implemented and validated:
@@ -94,8 +99,8 @@ Implemented and validated:
 
 Remaining:
 
-- [ ] Auto-launch `dsh web` when the endpoint is unreachable (spawn the `dsh`
-      bin, wait for readiness, reap on unload)
+- [x] Auto-launch `dsh web` when the endpoint is unreachable (spawn the `dsh`
+      bin, wait for readiness, reap on unload) — `HarnessAppLauncher`
 - [ ] Replace the Claude-copy settings-tab sections (safe mode, custom models,
       Chrome/Bang-Bash toggles) with harness-appropriate controls
 - [ ] Replace `app/ClaudeWorkspaceServices` (Claude CLI probing) with a

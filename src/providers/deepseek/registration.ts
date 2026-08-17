@@ -25,7 +25,7 @@ export const deepseekProviderRegistration: ProviderModule = {
   isEnabled: settings => getClaudeProviderSettings(settings).enabled,
   setEnabled: (settings, enabled) => updateClaudeProviderSettings(settings, { enabled }),
   capabilities: CLAUDE_PROVIDER_CAPABILITIES,
-  environmentKeyPatterns: [/^ANTHROPIC_/i, /^CLAUDE_/i],
+  environmentKeyPatterns: [/^DEEPSEEK_/i, /^DSH_/i],
   chatUIConfig: claudeChatUIConfig,
   settingsReconciler: claudeSettingsReconciler,
   settingsStorage: {
@@ -54,10 +54,15 @@ export const deepseekProviderRegistration: ProviderModule = {
     },
   },
   createExecutionBackend: (plugin) => {
-    const baseUrl = getClaudeProviderSettings(
-      plugin.settings,
-    ).harnessBaseUrl;
-    return new HarnessExecutionBackend('deepseek', baseUrl);
+    const settings = getClaudeProviderSettings(plugin.settings);
+    return new HarnessExecutionBackend({
+      baseUrl: settings.harnessBaseUrl,
+      launchConfig: {
+        autoLaunch: settings.autoLaunch,
+        dshPath: settings.dshPath,
+        environmentText: plugin.getActiveEnvironmentVariables('deepseek'),
+      },
+    });
   },
   createSubagentHistoryService: plugin => new ClaudeSubagentHistoryService(plugin),
   resolveTitleGenerationModel: (plugin) => {

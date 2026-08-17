@@ -1,5 +1,7 @@
 import { execFile } from 'child_process';
 import { randomUUID } from 'crypto';
+import * as fs from 'fs';
+import * as path from 'path';
 
 /**
  * Minimal RPC client for the DeepSeek Harness desktop app's local API.
@@ -72,39 +74,95 @@ interface RpcResponse<T = unknown> {
 const DEFAULT_BASE_URL = 'http://127.0.0.1:3080';
 
 /**
+ * Build a search PATH tolerant of GUI apps (Obsidian's Electron renderer)
+ * inheriting a minimal PATH that omits /usr/sbin, Homebrew, etc.
+ *
+ * Adapted from mcncarl/ailu's `executableSearchPath` (src/utils/env.ts):
+ * keep inherited entries first, then append common system/user dirs so system
+ * utilities like lsof remain discoverable. Rebuilt locally as a minimal
+ * version to avoid pulling in Ailu's wider utility graph.
+ */
+function executableSearchPath(currentPath = process.env.PATH ?? ''): string {
+  if (process.platform !== 'darwin') return currentPath;
+  const home = process.env.HOME ?? '';
+  const candidates = [
+    currentPath,
+    home ? path.join(home, '.local', 'bin') : '',
+    '/opt/homebrew/bin',
+    '/usr/local/bin',
+    '/usr/bin',
+    '/bin',
+    '/usr/sbin',
+    '/sbin',
+  ];
+  return [...new Set(
+    candidates.flatMap(entry => entry.split(path.delimiter)).filter(Boolean),
+  )].join(path.delimiter);
+}
+
+/**
+ * Resolve the lsof binary by walking an expanded search PATH, instead of a
+ * hard-coded list of absolute paths. Returns the first existing candidate.
+ */
+function resolveLsofBinary(): string | null {
+  const searchPath = executableSearchPath();
+  for (const dir of searchPath.split(path.delimiter).filter(Boolean)) {
+    const candidate = path.join(dir, 'lsof');
+    try {
+      if (fs.existsSync(candidate)) return candidate;
+    } catch {
+      // ignore unreadable directories
+    }
+  }
+  return null;
+}
+
+/**
  * Discover the DeepSeek Harness desktop app's live port.
  *
  * The desktop app launches its embedded server with `--port 0` (random port
  * per restart). On macOS the port is observable via lsof by matching the
  * process name "DeepSeek". `pgrep -f` is deliberately avoided (it matches the
  * invoking shell's own command line and returns a bogus PID).
+ *
+ * The lsof binary is located via an expanded search PATH (see
+ * executableSearchPath) because Obsidian's Electron renderer may not inherit
+ * `/usr/sbin` in its PATH.
  */
 export function discoverHarnessBaseUrl(): Promise<string | null> {
   return new Promise(resolve => {
-    execFile('lsof', ['-nP', '-iTCP', '-sTCP:LISTEN'], { timeout: 5000 }, (err, stdout) => {
+    const lsofBinary = resolveLsofBinary();
+    if (!lsofBinary) {
+      resolve(null);
+      return;
+    }
+    execFile(lsofBinary, ['-nP', '-iTCP', '-sTCP:LISTEN'], { timeout: 5000 }, (err, stdout) => {
       if (err) {
         resolve(null);
         return;
       }
-      for (const line of stdout.split('\n')) {
-        const match = line.match(/^DeepSeek\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+TCP\s+127\.0\.0\.1:(\d+)/);
-        if (match) {
-          resolve(`http://127.0.0.1:${match[1]}`);
-          return;
-        }
-      }
-      // Fallback: any DeepSeek process listing a localhost LISTEN socket.
-      for (const line of stdout.split('\n')) {
-        if (!line.includes('DeepSeek')) continue;
-        const match = line.match(/127\.0\.0\.1:(\d+)\s+\(LISTEN\)/);
-        if (match) {
-          resolve(`http://127.0.0.1:${match[1]}`);
-          return;
-        }
-      }
-      resolve(null);
+      const found = parseLsofPort(stdout);
+      resolve(found ? `http://127.0.0.1:${found}` : null);
     });
   });
+}
+
+function parseLsofPort(stdout: string): string | null {
+  for (const line of stdout.split('\n')) {
+    const match = line.match(/^DeepSeek\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+TCP\s+127\.0\.0\.1:(\d+)/);
+    if (match) {
+      return match[1];
+    }
+  }
+  // Fallback: any DeepSeek process listing a localhost LISTEN socket.
+  for (const line of stdout.split('\n')) {
+    if (!line.includes('DeepSeek')) continue;
+    const match = line.match(/127\.0\.0\.1:(\d+)\s+\(LISTEN\)/);
+    if (match) {
+      return match[1];
+    }
+  }
+  return null;
 }
 
 export class HarnessRpcClient {

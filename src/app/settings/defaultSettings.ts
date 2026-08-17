@@ -37,7 +37,7 @@ export const DEFAULT_CLAUDIAN_SETTINGS: ClaudianSettings = {
 
   providerConfigs: getBuiltInProviderDefaultConfigs(),
 
-  settingsProvider: 'claude',
+  settingsProvider: 'deepseek',
   lastSelectedChatModel: null,
   savedProviderModel: {},
   savedProviderEffort: {},

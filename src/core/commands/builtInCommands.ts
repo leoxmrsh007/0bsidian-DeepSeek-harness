@@ -62,12 +62,6 @@ export const BUILT_IN_COMMANDS: BuiltInCommand[] = [
     action: 'fork',
     requiredCapability: 'supportsFork',
   },
-  {
-    name: 'fast',
-    description: 'Toggle fast mode',
-    action: 'fast',
-    supportedProviderIds: ['codex'],
-  },
 ];
 
 /** Map of command names/aliases to their definitions. */

@@ -69,7 +69,6 @@ import { type InlineEditContext, InlineEditModal } from './features/inline-edit/
 import { ClaudianSettingTab } from './features/settings/ClaudianSettings';
 import { setLocale } from './i18n/i18n';
 import type { Locale } from './i18n/types';
-import { deleteLegacyMcpConfig } from './providers/claude/storage/LegacyMcpConfigCleanup';
 import { buildCursorContext } from './utils/editor';
 import { revealWorkspaceLeaf } from './utils/obsidianCompat';
 import { getVaultPath } from './utils/path';
@@ -419,11 +418,6 @@ export default class ClaudianPlugin extends Plugin {
     this.hasLoadedAllSessionMetadata = false;
     const sharedStorage = new SharedStorageService(this);
     this.storage = sharedStorage;
-    try {
-      await deleteLegacyMcpConfig(sharedStorage.getAdapter());
-    } catch {
-      new Notice('Failed to remove obsolete Claude configuration');
-    }
     const { claudian } = await sharedStorage.initialize();
     this.settings = {
       ...DEFAULT_CLAUDIAN_SETTINGS,

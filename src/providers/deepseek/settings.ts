@@ -32,6 +32,10 @@ export interface ClaudeProviderSettings {
   environmentHash: string;
   /** Base URL of the DeepSeek Harness local RPC API. */
   harnessBaseUrl: string;
+  /** Auto-launch `dsh web` when the endpoint is unreachable. */
+  autoLaunch: boolean;
+  /** Optional explicit path to the `dsh` binary (empty resolves via PATH). */
+  dshPath: string;
 }
 
 export const DEFAULT_CLAUDE_PROVIDER_SETTINGS: Readonly<ClaudeProviderSettings> = Object.freeze({
@@ -50,6 +54,8 @@ export const DEFAULT_CLAUDE_PROVIDER_SETTINGS: Readonly<ClaudeProviderSettings> 
   environmentVariables: '',
   environmentHash: '',
   harnessBaseUrl: 'http://127.0.0.1:3080',
+  autoLaunch: true,
+  dshPath: '',
 });
 
 function normalizeClaudeSafeMode(value: unknown): ClaudeSafeMode | undefined {
@@ -144,6 +150,14 @@ export function getClaudeProviderSettings(
     harnessBaseUrl: readStoredString(
       config.harnessBaseUrl,
       DEFAULT_CLAUDE_PROVIDER_SETTINGS.harnessBaseUrl,
+    ),
+    autoLaunch: readStoredBoolean(
+      config.autoLaunch,
+      DEFAULT_CLAUDE_PROVIDER_SETTINGS.autoLaunch,
+    ),
+    dshPath: readStoredString(
+      config.dshPath,
+      DEFAULT_CLAUDE_PROVIDER_SETTINGS.dshPath,
     ),
   };
 }

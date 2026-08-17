@@ -1,17 +1,23 @@
 import type { ProviderExecutionBackend, ProviderSessionConfig } from '../../../core/execution/ProviderExecutionBackend';
 import type { ProviderExecutionSession } from '../../../core/execution/ProviderExecutionSession';
+import type { HarnessLaunchConfig } from './HarnessAppLauncher';
 import { HarnessExecutionSession } from './HarnessExecutionSession';
+
+export interface HarnessExecutionBackendOptions {
+  readonly baseUrl: string;
+  readonly launchConfig: HarnessLaunchConfig;
+}
 
 /**
  * Execution backend that drives a DeepSeek Harness instance over its local
  * RPC API (http://127.0.0.1:<port>/api/...). The harness desktop app is the
- * agent engine; claudian is a remote front-end.
+ * agent engine; claudian is a remote front-end. When the app is not running,
+ * the backend can auto-launch `dsh web` via {@link HarnessLaunchConfig.autoLaunch}.
  */
 export class HarnessExecutionBackend implements ProviderExecutionBackend {
-  constructor(
-    readonly providerId: 'deepseek',
-    private readonly baseUrl: string,
-  ) {}
+  readonly providerId = 'deepseek' as const;
+
+  constructor(private readonly options: HarnessExecutionBackendOptions) {}
 
   createSession(config: ProviderSessionConfig): ProviderExecutionSession {
     const providerSessionId =
@@ -24,7 +30,8 @@ export class HarnessExecutionBackend implements ProviderExecutionBackend {
       sessionInstanceId: config.resumeSeed?.providerSessionId
         ? `harness-${config.resumeSeed.providerSessionId}`
         : `harness-${Math.random().toString(36).slice(2, 10)}`,
-      baseUrl: this.baseUrl,
+      baseUrl: this.options.baseUrl,
+      launchConfig: this.options.launchConfig,
       providerSessionId,
       interactionPort: config.interactionPort,
     });

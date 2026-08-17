@@ -1,5 +1,5 @@
 import { BUILT_IN_PROVIDER_MODULES } from '@/providers';
-import { getCodexProviderSettings } from '@/providers/codex/settings';
+import { getClaudeProviderSettings } from '@/providers/deepseek/settings';
 import { getBuiltInProviderDefaultConfigs } from '@/providers/defaultProviderConfigs';
 
 function getProviderConfig(
@@ -13,12 +13,7 @@ function getProviderConfig(
 describe('built-in ProviderModule catalog', () => {
   it('is the single ordered source for chat, workspace, and settings composition', () => {
     expect(BUILT_IN_PROVIDER_MODULES.map(module => module.id)).toEqual([
-      'claude',
-      'codex',
       'deepseek',
-      'grok',
-      'opencode',
-      'pi',
     ]);
     for (const module of BUILT_IN_PROVIDER_MODULES) {
       expect(module.workspace.initialize).toEqual(expect.any(Function));
@@ -35,10 +30,12 @@ describe('built-in ProviderModule catalog', () => {
           enabled: 'false',
           environmentHash: false,
           environmentVariables: ['SECRET=not-a-string'],
+          autoLaunch: 'false',
+          harnessBaseUrl: 123,
         },
       ])),
     };
-    Object.assign(getProviderConfig(malformedSettings, 'claude'), {
+    Object.assign(getProviderConfig(malformedSettings, 'deepseek'), {
       customModels: {},
       defaultModel: {},
       enableBangBash: 1,
@@ -47,33 +44,15 @@ describe('built-in ProviderModule catalog', () => {
       loadUserSettings: 'false',
       safeMode: 'unknown',
     });
-    Object.assign(getProviderConfig(malformedSettings, 'codex'), {
-      catalogFingerprint: [],
-      catalogTimestamp: 'now',
-      customModels: {},
-      reasoningSummary: 'verbose',
-      safeMode: 'danger-full-access',
-    });
-    Object.assign(getProviderConfig(malformedSettings, 'opencode'), {
-      selectedMode: 123,
-    });
-    Object.assign(getProviderConfig(malformedSettings, 'pi'), {
-      toolMode: 'danger-full-access',
-    });
 
     const defaultEnabled: Record<string, boolean> = {
-      claude: true,
-      codex: false,
       deepseek: false,
-      grok: false,
-      opencode: false,
-      pi: false,
     };
 
     for (const module of BUILT_IN_PROVIDER_MODULES) {
       expect(module.isEnabled(malformedSettings)).toBe(defaultEnabled[module.id]);
     }
-    expect(getCodexProviderSettings(malformedSettings).safeMode).toBe('read-only');
+    expect(getClaudeProviderSettings(malformedSettings).safeMode).toBe('default');
 
     const normalizedSettings: Record<string, unknown> = {};
     for (const module of BUILT_IN_PROVIDER_MODULES) {
@@ -88,7 +67,7 @@ describe('built-in ProviderModule catalog', () => {
       expect(config.environmentVariables).toEqual(expect.any(String));
     }
 
-    expect(getProviderConfig(normalizedSettings, 'claude')).toMatchObject({
+    expect(getProviderConfig(normalizedSettings, 'deepseek')).toMatchObject({
       customModels: expect.any(String),
       defaultModel: expect.any(String),
       enableBangBash: false,
@@ -96,34 +75,9 @@ describe('built-in ProviderModule catalog', () => {
       lastModel: expect.any(String),
       loadUserSettings: true,
       safeMode: 'default',
+      autoLaunch: true,
+      harnessBaseUrl: expect.any(String),
     });
-    expect(getProviderConfig(normalizedSettings, 'codex')).toMatchObject({
-      catalogFingerprint: expect.any(String),
-      catalogTimestamp: 0,
-      customModels: expect.any(String),
-      reasoningSummary: 'detailed',
-      safeMode: 'read-only',
-    });
-    expect(getProviderConfig(normalizedSettings, 'opencode')).toMatchObject({
-      selectedMode: 'claudian-safe',
-    });
-    expect(getProviderConfig(normalizedSettings, 'pi')).toMatchObject({
-      toolMode: 'readonly',
-    });
-  });
-
-  it('keeps ephemeral OpenCode plan-mode normalization provider-owned', () => {
-    const opencodeModule = BUILT_IN_PROVIDER_MODULES.find(module => module.id === 'opencode');
-    const normalizedSettings: Record<string, unknown> = {};
-
-    expect(opencodeModule?.settingsStorage.normalizeStored(normalizedSettings, {
-      providerConfigs: {
-        opencode: {
-          selectedMode: 'plan',
-        },
-      },
-    })).toBe(true);
-    expect(getProviderConfig(normalizedSettings, 'opencode').selectedMode).toBe('claudian-safe');
   });
 
   it('does not report canonical provider defaults as changed', () => {

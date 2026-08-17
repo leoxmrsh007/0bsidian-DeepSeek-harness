@@ -18,9 +18,9 @@ describe('ClaudianSettingTab model option updates', () => {
     const refreshTitleModelOptions = jest.fn();
     (tab as any).refreshTitleModelOptions = refreshTitleModelOptions;
 
-    (tab as any).notifyProviderModelOptionsChanged('codex');
+    (tab as any).notifyProviderModelOptionsChanged('deepseek');
 
-    expect(notifyProviderChatOptionsChanged).toHaveBeenCalledWith('codex');
+    expect(notifyProviderChatOptionsChanged).toHaveBeenCalledWith('deepseek');
     expect(refreshModelSelector).not.toHaveBeenCalled();
     expect(refreshTitleModelOptions).toHaveBeenCalledTimes(1);
   });
@@ -42,7 +42,7 @@ describe('ClaudianSettingTab model option updates', () => {
     await (tab as any).restartServiceForPromptChange();
 
     expect(runProviderExecutionTransition).toHaveBeenCalledWith(
-      expect.arrayContaining(['claude', 'codex', 'grok', 'opencode', 'pi']),
+      expect.arrayContaining(['deepseek']),
       expect.any(Function),
     );
   });

@@ -12,6 +12,7 @@ import type {
   ProviderSessionStatus,
 } from '../../../core/execution/ProviderSessionSnapshot';
 import type { ProviderId } from '../../../core/types/provider';
+import { HarnessAppLauncher, type HarnessLaunchConfig } from './HarnessAppLauncher';
 import { HarnessEventMapper } from './HarnessEventMapper';
 import type {
   HarnessMuxSocket} from './HarnessRpcClient';
@@ -29,6 +30,7 @@ interface HarnessSessionOptions {
   readonly providerId: ProviderId;
   readonly sessionInstanceId: string;
   readonly baseUrl: string;
+  readonly launchConfig: HarnessLaunchConfig;
   readonly providerSessionId?: string;
   readonly interactionPort: ProviderInteractionPort;
 }
@@ -56,12 +58,16 @@ export class HarnessExecutionSession implements ProviderExecutionSession {
   private disposed = false;
   private mux: HarnessMuxSocket | null = null;
   private activeRun: { executionId: string; controller: AbortController } | null = null;
+  private readonly baseUrl: string;
+  private readonly launchConfig: HarnessLaunchConfig;
 
   constructor(options: HarnessSessionOptions) {
     this.providerId = options.providerId;
     this.sessionInstanceId = options.sessionInstanceId;
+    this.baseUrl = options.baseUrl;
     this.rpc = new HarnessRpcClient(options.baseUrl);
     this.interactionPort = options.interactionPort;
+    this.launchConfig = options.launchConfig;
     this.providerSessionId = options.providerSessionId;
   }
 
@@ -154,9 +160,19 @@ export class HarnessExecutionSession implements ProviderExecutionSession {
     };
 
     try {
-      // 0. Ensure the harness endpoint is reachable; if not, discover the
-      //    live random port (the desktop app rebinds on every restart).
-      await this.ensureReachable(controller.signal);
+      // 0. Ensure the harness endpoint is reachable; discover the live random
+      //    port, then auto-launch `dsh web` as a last resort.
+      const reachable = await this.ensureReachable(controller.signal);
+      if (!reachable) {
+        yield {
+          type: 'execution_error',
+          scope,
+          category: 'transport',
+          message: 'DeepSeek Harness is not reachable. Start it with `dsh web`, or enable auto-launch and make sure `dsh` is installed (`npm i -g @deepseek-ai/dsh`).',
+          recoverable: true,
+        };
+        return;
+      }
 
       // 1. Ensure a harness session exists.
       let sessionId = this.providerSessionId;
@@ -331,16 +347,28 @@ export class HarnessExecutionSession implements ProviderExecutionSession {
   }
 
   /**
-   * Probe the configured harness endpoint; if unreachable, discover the
-   * live random port and point the RPC client at it. Returns without error
-   * when neither works — the subsequent RPC call will surface a transport
-   * error with a clear message.
+   * Probe the configured harness endpoint; if unreachable, discover the live
+   * random port, then auto-launch `dsh web` when configured. Returns true when
+   * the endpoint is reachable by the end of the attempt.
    */
-  private async ensureReachable(signal: AbortSignal): Promise<void> {
-    if (await this.rpc.probe(1500)) return;
+  private async ensureReachable(_signal: AbortSignal): Promise<boolean> {
+    if (await this.rpc.probe(1500)) return true;
+
     const discovered = await discoverHarnessBaseUrl();
-    if (!discovered) return;
-    this.rpc.updateBaseUrl(discovered);
+    if (discovered) {
+      this.rpc.updateBaseUrl(discovered);
+      return true;
+    }
+
+    const launched = await HarnessAppLauncher.get().ensureRunning(
+      this.baseUrl,
+      this.launchConfig,
+    );
+    if (launched) {
+      this.rpc.updateBaseUrl(this.baseUrl);
+      return true;
+    }
+    return false;
   }
 
   private categorizeError(err: unknown): 'provider-session-missing' | 'transport' | 'provider' | 'unknown' {
