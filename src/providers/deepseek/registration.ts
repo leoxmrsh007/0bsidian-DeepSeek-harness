@@ -68,7 +68,7 @@ export const deepseekProviderRegistration: ProviderModule = {
     const envVars = parseEnvironmentVariables(
       plugin.getActiveEnvironmentVariables('deepseek'),
     );
-    return envVars.ANTHROPIC_DEFAULT_HAIKU_MODEL || 'deepseek-chat';
+    return envVars.ANTHROPIC_DEFAULT_HAIKU_MODEL || 'deepseek-v4-flash';
   },
   historyService: new HarnessConversationHistoryService(),
   taskResultInterpreter: new ClaudeTaskResultInterpreter(),

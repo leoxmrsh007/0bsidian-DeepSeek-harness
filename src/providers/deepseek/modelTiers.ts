@@ -5,10 +5,10 @@ interface ClaudeModelVersion {
 
 export const CLAUDE_MODEL_TIER_DEFINITIONS = [
   {
-    id: 'deepseek-chat',
-    label: 'DeepSeek Chat',
-    agentLabel: 'Chat',
-    description: 'Fast general-purpose model (DeepSeek-V3)',
+    id: 'deepseek-v4-flash',
+    label: 'DeepSeek V4 Flash',
+    agentLabel: 'Flash',
+    description: 'Fast general-purpose model',
     environmentKey: 'ANTHROPIC_DEFAULT_HAIKU_MODEL',
     environmentPriority: 4,
     agentOrder: 3,
@@ -20,10 +20,10 @@ export const CLAUDE_MODEL_TIER_DEFINITIONS = [
     versionedXHighFrom: null,
   },
   {
-    id: 'deepseek-reasoner',
-    label: 'DeepSeek Reasoner',
-    agentLabel: 'Reasoner',
-    description: 'Reasoning model (DeepSeek-R1)',
+    id: 'deepseek-v4-pro',
+    label: 'DeepSeek V4 Pro',
+    agentLabel: 'Pro',
+    description: 'Most capable model',
     environmentKey: 'ANTHROPIC_DEFAULT_OPUS_MODEL',
     environmentPriority: 2,
     agentOrder: 2,

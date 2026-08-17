@@ -43,19 +43,10 @@ export const DEFAULT_CLAUDE_PROVIDER_SETTINGS: Readonly<ClaudeProviderSettings> 
   enableChrome: false,
   enableBangBash: false,
   customModels: '',
-  defaultModel: 'deepseek-chat',
-  lastModel: 'deepseek-chat',
+  defaultModel: 'deepseek-v4-flash',
+  lastModel: 'deepseek-v4-flash',
   modelEnvironmentType: '',
   titleModelEnvironmentType: '',
-  // Point the Claude Code CLI at DeepSeek's Anthropic-compatible endpoint.
-  // Users only need to add their key, e.g.:
-  //   ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic
-  //   ANTHROPIC_AUTH_TOKEN=sk-...
-  //   ANTHROPIC_MODEL=deepseek-chat
-  //   ANTHROPIC_SMALL_FAST_MODEL=deepseek-chat
-  //   ANTHROPIC_DEFAULT_HAIKU_MODEL=deepseek-chat
-  //   ANTHROPIC_DEFAULT_SONNET_MODEL=deepseek-chat
-  //   ANTHROPIC_DEFAULT_OPUS_MODEL=deepseek-reasoner
   environmentVariables: '',
   environmentHash: '',
   harnessBaseUrl: 'http://127.0.0.1:3080',
