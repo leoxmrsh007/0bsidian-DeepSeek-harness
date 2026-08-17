@@ -28,7 +28,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 export interface CombinedSettings {
   cc: CCSettings;
-  claudian: StoredDeepSeekHarnessSettings;
+  deepseekHarnessSettings: StoredDeepSeekHarnessSettings;
 }
 
 interface StorageServicePlugin {
@@ -39,7 +39,7 @@ interface StorageServicePlugin {
 
 export class StorageService {
   readonly ccSettings: CCSettingsStorage;
-  readonly claudianSettings: DeepSeekHarnessSettingsStorage;
+  readonly deepseekHarnessSettings: DeepSeekHarnessSettingsStorage;
   readonly commands: SlashCommandStorage;
   readonly skills: SkillStorage;
   readonly sessions: SessionStorage;
@@ -54,7 +54,7 @@ export class StorageService {
     this.app = plugin.app;
     this.adapter = adapter ?? new VaultFileAdapter(this.app);
     this.ccSettings = new CCSettingsStorage(this.adapter);
-    this.claudianSettings = new DeepSeekHarnessSettingsStorage(this.adapter);
+    this.deepseekHarnessSettings = new DeepSeekHarnessSettingsStorage(this.adapter);
     this.commands = new SlashCommandStorage(this.adapter);
     this.skills = new SkillStorage(this.adapter);
     this.sessions = new SessionStorage(this.adapter);
@@ -65,9 +65,9 @@ export class StorageService {
     await this.ensureDirectories();
 
     const cc = await this.ccSettings.load();
-    const claudian = await this.claudianSettings.load();
+    const settings = await this.deepseekHarnessSettings.load();
 
-    return { cc, claudian };
+    return { cc, deepseekHarnessSettings: settings };
   }
 
   async ensureDirectories(): Promise<void> {
@@ -109,16 +109,16 @@ export class StorageService {
     return this.ccSettings.removeRule(createPermissionRule(rule));
   }
 
-  async updateClaudianSettings(updates: Partial<StoredDeepSeekHarnessSettings>): Promise<void> {
-    return this.claudianSettings.update(updates);
+  async updateDeepSeekHarnessSettings(updates: Partial<StoredDeepSeekHarnessSettings>): Promise<void> {
+    return this.deepseekHarnessSettings.update(updates);
   }
 
-  async saveClaudianSettings(settings: StoredDeepSeekHarnessSettings): Promise<void> {
-    return this.claudianSettings.save(settings);
+  async saveDeepSeekHarnessSettings(settings: StoredDeepSeekHarnessSettings): Promise<void> {
+    return this.deepseekHarnessSettings.save(settings);
   }
 
-  async loadClaudianSettings(): Promise<StoredDeepSeekHarnessSettings> {
-    return this.claudianSettings.load();
+  async loadDeepSeekHarnessSettings(): Promise<StoredDeepSeekHarnessSettings> {
+    return this.deepseekHarnessSettings.load();
   }
 
   async getTabManagerState(): Promise<TabManagerPersistedState | null> {
