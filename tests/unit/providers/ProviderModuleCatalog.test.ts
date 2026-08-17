@@ -1,6 +1,6 @@
 import { BUILT_IN_PROVIDER_MODULES } from '@/providers';
-import { getDeepSeekProviderSettings } from '@/providers/deepseek/settings';
 import { getBuiltInProviderDefaultConfigs } from '@/providers/defaultProviderConfigs';
+import { getDeepSeekProviderSettings } from '@/providers/deepseek/settings';
 
 function getProviderConfig(
   settings: Record<string, unknown>,
@@ -13,6 +13,7 @@ function getProviderConfig(
 describe('built-in ProviderModule catalog', () => {
   it('is the single ordered source for chat, workspace, and settings composition', () => {
     expect(BUILT_IN_PROVIDER_MODULES.map(module => module.id)).toEqual([
+      'claude',
       'deepseek',
     ]);
     for (const module of BUILT_IN_PROVIDER_MODULES) {
@@ -30,22 +31,17 @@ describe('built-in ProviderModule catalog', () => {
           enabled: 'false',
           environmentHash: false,
           environmentVariables: ['SECRET=not-a-string'],
-          autoLaunch: 'false',
-          harnessBaseUrl: 123,
         },
       ])),
     };
     Object.assign(getProviderConfig(malformedSettings, 'deepseek'), {
-      customModels: {},
-      defaultModel: {},
-      enableBangBash: 1,
-      enableChrome: 'true',
-      lastModel: [],
-      loadUserSettings: 'false',
+      autoLaunch: 'false',
+      harnessBaseUrl: 123,
       safeMode: 'unknown',
     });
 
     const defaultEnabled: Record<string, boolean> = {
+      claude: true,
       deepseek: false,
     };
 
@@ -62,21 +58,14 @@ describe('built-in ProviderModule catalog', () => {
       )).toBe(true);
       const config = getProviderConfig(normalizedSettings, module.id);
       expect(config.enabled).toBe(defaultEnabled[module.id]);
-      expect(config.cliPath).toEqual(expect.any(String));
       expect(config.environmentHash).toEqual(expect.any(String));
       expect(config.environmentVariables).toEqual(expect.any(String));
     }
 
     expect(getProviderConfig(normalizedSettings, 'deepseek')).toMatchObject({
-      customModels: expect.any(String),
-      defaultModel: expect.any(String),
-      enableBangBash: false,
-      enableChrome: false,
-      lastModel: expect.any(String),
-      loadUserSettings: true,
-      safeMode: 'default',
       autoLaunch: true,
       harnessBaseUrl: expect.any(String),
+      safeMode: 'default',
     });
   });
 

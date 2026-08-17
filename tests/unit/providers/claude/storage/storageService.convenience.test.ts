@@ -86,6 +86,10 @@ describe('StorageService convenience methods', () => {
       await storage.initialize();
 
       const perms = await storage.getPermissions();
+      // eslint-disable-next-line no-console
+      console.log("DBG exists:", await (storage.getAdapter() as any).exists('.claude/settings.json'));
+      // eslint-disable-next-line no-console
+      console.log("DBG perms:", JSON.stringify(perms));
       expect(perms.allow).toContainEqual('Bash(git *)');
       expect(perms.deny).toContainEqual('Bash(rm -rf)');
     });
@@ -175,7 +179,7 @@ describe('StorageService convenience methods', () => {
     it('updates partial claudian settings', async () => {
       const { plugin, files } = createMockPlugin({
         initialFiles: {
-          '.claudian/claudian-settings.json': claudianSettingsJson,
+          '.deepseek-harness/settings.json': claudianSettingsJson,
         },
       });
       const storage = new StorageService(plugin);
@@ -183,7 +187,7 @@ describe('StorageService convenience methods', () => {
 
       await storage.updateClaudianSettings({ userName: 'NewUser' });
 
-      const saved = JSON.parse(files.get('.claudian/claudian-settings.json')!) as Record<string, unknown>;
+      const saved = JSON.parse(files.get('.deepseek-harness/settings.json')!) as Record<string, unknown>;
       expect(saved.userName).toBe('NewUser');
     });
   });
@@ -192,7 +196,7 @@ describe('StorageService convenience methods', () => {
     it('saves full claudian settings', async () => {
       const { plugin, files } = createMockPlugin({
         initialFiles: {
-          '.claudian/claudian-settings.json': claudianSettingsJson,
+          '.deepseek-harness/settings.json': claudianSettingsJson,
         },
       });
       const storage = new StorageService(plugin);
@@ -202,7 +206,7 @@ describe('StorageService convenience methods', () => {
       existing.userName = 'FullSave';
       await storage.saveClaudianSettings(existing);
 
-      const saved = JSON.parse(files.get('.claudian/claudian-settings.json')!) as Record<string, unknown>;
+      const saved = JSON.parse(files.get('.deepseek-harness/settings.json')!) as Record<string, unknown>;
       expect(saved.userName).toBe('FullSave');
     });
   });
@@ -211,7 +215,7 @@ describe('StorageService convenience methods', () => {
     it('loads claudian settings', async () => {
       const { plugin } = createMockPlugin({
         initialFiles: {
-          '.claudian/claudian-settings.json': claudianSettingsJson,
+          '.deepseek-harness/settings.json': claudianSettingsJson,
         },
       });
       const storage = new StorageService(plugin);
@@ -222,18 +226,18 @@ describe('StorageService convenience methods', () => {
       expect(settings.model).toBe('haiku');
     });
 
-    it('migrates legacy settings into .claudian during initialization', async () => {
+    it('migrates legacy settings into .deepseek-harness during initialization', async () => {
       const { plugin, files } = createMockPlugin({
         initialFiles: {
-          '.claude/claudian-settings.json': claudianSettingsJson,
+          '.claude/settings.json': claudianSettingsJson,
         },
       });
       const storage = new StorageService(plugin);
 
       await storage.initialize();
 
-      expect(files.get('.claudian/claudian-settings.json')).toBeDefined();
-      expect(files.has('.claude/claudian-settings.json')).toBe(false);
+      expect(files.get('.deepseek-harness/settings.json')).toBeDefined();
+      expect(files.has('.claude/settings.json')).toBe(false);
     });
   });
 

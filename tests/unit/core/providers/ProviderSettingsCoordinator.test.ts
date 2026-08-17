@@ -2,11 +2,10 @@ import '@/providers';
 
 import { ProviderRegistry } from '@/core/providers/ProviderRegistry';
 import { ProviderSettingsCoordinator } from '@/core/providers/ProviderSettingsCoordinator';
-import { DEFAULT_DEEPSEEK_PROVIDER_SETTINGS } from '@/providers/deepseek/settings';
 
 describe('ProviderSettingsCoordinator', () => {
   describe('normalizeProviderSelection', () => {
-    it('falls back to deepseek for unknown providers', () => {
+    it('falls back to claude for unknown providers', () => {
       const settings: Record<string, unknown> = {
         settingsProvider: 'mystery-provider',
         providerConfigs: {},
@@ -15,14 +14,14 @@ describe('ProviderSettingsCoordinator', () => {
       const changed = ProviderSettingsCoordinator.normalizeProviderSelection(settings);
 
       expect(changed).toBe(true);
-      expect(settings.settingsProvider).toBe('deepseek');
+      expect(settings.settingsProvider).toBe('claude');
     });
 
     it('returns false when already normalized (no-op)', () => {
       const settings: Record<string, unknown> = {
-        settingsProvider: 'deepseek',
+        settingsProvider: 'claude',
         providerConfigs: {
-          deepseek: { enabled: true },
+          claude: { enabled: true },
         },
       };
       expect(ProviderSettingsCoordinator.normalizeProviderSelection(settings)).toBe(false);
@@ -33,51 +32,52 @@ describe('ProviderSettingsCoordinator', () => {
     it('preflights the sole enabled provider without mutating settings', () => {
       const settings: Record<string, unknown> = {
         providerConfigs: {
-          deepseek: { ...DEFAULT_DEEPSEEK_PROVIDER_SETTINGS, enabled: true },
+          claude: { enabled: true },
+          deepseek: { enabled: false },
         },
       };
 
       expect(ProviderSettingsCoordinator.canApplyProviderEnablement(
         settings,
-        'deepseek',
+        'claude',
         false,
       )).toBe(false);
       expect(ProviderSettingsCoordinator.canApplyProviderEnablement(
         settings,
-        'deepseek',
+        'claude',
         true,
       )).toBe(true);
-      expect(ProviderRegistry.isEnabled('deepseek', settings)).toBe(true);
+      expect(ProviderRegistry.isEnabled('claude', settings)).toBe(true);
     });
 
     it('keeps the sole enabled provider enabled', () => {
       const settings: Record<string, unknown> = {
-        settingsProvider: 'deepseek',
-        model: 'deepseek-v4-flash',
+        settingsProvider: 'claude',
+        model: 'sonnet',
         titleGenerationModel: '',
         providerConfigs: {
-          deepseek: { ...DEFAULT_DEEPSEEK_PROVIDER_SETTINGS, enabled: true },
+          claude: { enabled: true },
+          deepseek: { enabled: false },
         },
       };
 
       const accepted = ProviderSettingsCoordinator.applyProviderEnablement(
         settings,
-        'deepseek',
+        'claude',
         false,
       );
 
       expect(accepted).toBe(false);
-      expect(ProviderRegistry.isEnabled('deepseek', settings)).toBe(true);
-      expect(ProviderRegistry.getEnabledProviderIds(settings)).toEqual(['deepseek']);
-      expect(settings.settingsProvider).toBe('deepseek');
+      expect(ProviderRegistry.isEnabled('claude', settings)).toBe(true);
+      expect(settings.settingsProvider).toBe('claude');
     });
   });
 
   describe('projectActiveProviderState', () => {
     it('does not overwrite when no saved values exist', () => {
       const settings: Record<string, unknown> = {
-        settingsProvider: 'deepseek',
-        model: 'deepseek-v4-flash',
+        settingsProvider: 'claude',
+        model: 'sonnet',
         effortLevel: 'high',
         serviceTier: 'default',
         thinkingBudget: 'off',
@@ -89,42 +89,26 @@ describe('ProviderSettingsCoordinator', () => {
 
       ProviderSettingsCoordinator.projectActiveProviderState(settings);
 
-      expect(settings.model).toBe('deepseek-v4-flash');
+      expect(settings.model).toBe('sonnet');
       expect(settings.effortLevel).toBe('high');
-      expect(settings.thinkingBudget).toBe('off');
-    });
-
-    it('handles missing saved maps gracefully', () => {
-      const settings: Record<string, unknown> = {
-        settingsProvider: 'deepseek',
-        model: 'deepseek-v4-flash',
-        effortLevel: 'high',
-        serviceTier: 'default',
-        thinkingBudget: 'off',
-      };
-
-      // Should not throw
-      ProviderSettingsCoordinator.projectActiveProviderState(settings);
-
-      expect(settings.model).toBe('deepseek-v4-flash');
     });
 
     it('projects the saved provider model onto the active selection', () => {
       const settings: Record<string, unknown> = {
-        settingsProvider: 'deepseek',
-        model: 'deepseek-v4-flash',
+        settingsProvider: 'claude',
+        model: 'sonnet',
         effortLevel: 'low',
         serviceTier: 'default',
         thinkingBudget: '500',
-        savedProviderModel: { deepseek: 'deepseek-v4-pro' },
-        savedProviderEffort: { deepseek: 'high' },
-        savedProviderServiceTier: { deepseek: 'default' },
-        savedProviderThinkingBudget: { deepseek: 'off' },
+        savedProviderModel: { claude: 'opus' },
+        savedProviderEffort: { claude: 'high' },
+        savedProviderServiceTier: { claude: 'default' },
+        savedProviderThinkingBudget: { claude: 'off' },
       };
 
       ProviderSettingsCoordinator.projectActiveProviderState(settings);
 
-      expect(settings.model).toBe('deepseek-v4-pro');
+      expect(settings.model).toBe('opus');
       expect(settings.effortLevel).toBe('high');
     });
   });

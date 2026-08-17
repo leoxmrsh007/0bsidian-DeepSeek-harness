@@ -42,15 +42,15 @@ describe('SessionStorage', () => {
   });
 
   describe('SESSIONS_PATH', () => {
-    it('should be .claudian/sessions', () => {
-      expect(SESSIONS_PATH).toBe('.claudian/sessions');
+    it('should be .deepseek-harness/sessions', () => {
+      expect(SESSIONS_PATH).toBe('.deepseek-harness/sessions');
     });
   });
 
   describe('getMetadataPath', () => {
     it('returns correct file path for session id', () => {
       const path = storage.getMetadataPath('session-abc');
-      expect(path).toBe('.claudian/sessions/session-abc.meta.json');
+      expect(path).toBe('.deepseek-harness/sessions/session-abc.meta.json');
     });
 
     it.each(['', '.', '..', '../escape', 'nested/id', 'nested\\id', '/absolute', '%2Fescape', '%5cescape'])(
@@ -219,7 +219,7 @@ describe('SessionStorage', () => {
         path === `${LEGACY_SESSIONS_PATH}/session-legacy.meta.json`
       ));
       mockAdapter.read.mockResolvedValue(JSON.stringify(metadata));
-      mockAdapter.write.mockRejectedValue(new Error('EEXIST: .claudian/sessions'));
+      mockAdapter.write.mockRejectedValue(new Error('EEXIST: .deepseek-harness/sessions'));
 
       await expect(storage.loadMetadata('session-legacy')).resolves.toEqual(metadata);
       expect(mockAdapter.delete).not.toHaveBeenCalled();
@@ -305,8 +305,8 @@ describe('SessionStorage', () => {
   describe('listAllConversations - provider routing', () => {
     it('preserves providerId from metadata', async () => {
       mockAdapter.listFiles.mockResolvedValue([
-        '.claudian/sessions/claude-session.meta.json',
-        '.claudian/sessions/codex-session.meta.json',
+        '.deepseek-harness/sessions/claude-session.meta.json',
+        '.deepseek-harness/sessions/codex-session.meta.json',
       ]);
 
       mockAdapter.read.mockImplementation((path: string) => {
@@ -342,7 +342,7 @@ describe('SessionStorage', () => {
 
     it('defaults providerId to claude for legacy conversations', async () => {
       mockAdapter.listFiles.mockResolvedValue([
-        '.claudian/sessions/old.meta.json',
+        '.deepseek-harness/sessions/old.meta.json',
       ]);
 
       mockAdapter.read.mockResolvedValue(JSON.stringify({
@@ -362,8 +362,8 @@ describe('SessionStorage', () => {
   describe('listMetadata', () => {
     it('returns metadata for .meta.json files', async () => {
       mockAdapter.listFiles.mockResolvedValue([
-        '.claudian/sessions/native-1.meta.json',
-        '.claudian/sessions/native-2.meta.json',
+        '.deepseek-harness/sessions/native-1.meta.json',
+        '.deepseek-harness/sessions/native-2.meta.json',
       ]);
 
       mockAdapter.read.mockImplementation((path: string) => {
@@ -421,8 +421,8 @@ describe('SessionStorage', () => {
 
     it('skips files that fail to load', async () => {
       mockAdapter.listFiles.mockResolvedValue([
-        '.claudian/sessions/good.meta.json',
-        '.claudian/sessions/bad.meta.json',
+        '.deepseek-harness/sessions/good.meta.json',
+        '.deepseek-harness/sessions/bad.meta.json',
       ]);
 
       mockAdapter.read.mockImplementation((path: string) => {
@@ -498,7 +498,7 @@ describe('SessionStorage', () => {
         createdAt: 1,
         lastActivityAt: 2,
       }));
-      mockAdapter.write.mockRejectedValue(new Error('EEXIST: .claudian/sessions'));
+      mockAdapter.write.mockRejectedValue(new Error('EEXIST: .deepseek-harness/sessions'));
 
       await expect(storage.listMetadata()).resolves.toEqual([
         expect.objectContaining({ id: 'legacy', title: 'Legacy session' }),
@@ -515,8 +515,8 @@ describe('SessionStorage', () => {
         lastActivityAt: 1,
       });
       mockAdapter.listFiles.mockResolvedValue([
-        '.claudian/sessions/filename-id.meta.json',
-        '.claudian/sessions/%2Funsafe.meta.json',
+        '.deepseek-harness/sessions/filename-id.meta.json',
+        '.deepseek-harness/sessions/%2Funsafe.meta.json',
       ]);
       mockAdapter.read.mockResolvedValue(original);
 
@@ -590,8 +590,8 @@ describe('SessionStorage', () => {
   describe('listAllConversations', () => {
     it('returns metadata from listMetadata as ConversationMeta[]', async () => {
       mockAdapter.listFiles.mockResolvedValue([
-        '.claudian/sessions/session-1.meta.json',
-        '.claudian/sessions/session-2.meta.json',
+        '.deepseek-harness/sessions/session-1.meta.json',
+        '.deepseek-harness/sessions/session-2.meta.json',
       ]);
 
       mockAdapter.read.mockImplementation((path: string) => {
@@ -649,7 +649,7 @@ describe('SessionStorage', () => {
 
     it('preserves titleGenerationStatus', async () => {
       mockAdapter.listFiles.mockResolvedValue([
-        '.claudian/sessions/session-status.meta.json',
+        '.deepseek-harness/sessions/session-status.meta.json',
       ]);
 
       mockAdapter.read.mockResolvedValue(JSON.stringify({

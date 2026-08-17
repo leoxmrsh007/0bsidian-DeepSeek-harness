@@ -2,6 +2,7 @@ import { type ChildProcess,spawn } from 'child_process';
 
 import { findCliBinaryPath } from '../../../utils/cliBinaryLocator';
 import { parseEnvironmentVariables } from '../../../utils/env';
+import { nodeHttpRequest } from './nodeHttp';
 
 /** Configuration for launching the DeepSeek Harness desktop app on demand. */
 export interface HarnessLaunchConfig {
@@ -118,17 +119,8 @@ function extractPort(baseUrl: string): number | null {
 
 async function probeHarness(baseUrl: string, timeoutMs = 1500): Promise<boolean> {
   try {
-    const controller = new AbortController();
-    const timer = window.setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const res = await fetch(baseUrl.replace(/\/+$/, '') + '/', {
-        signal: controller.signal,
-        cache: 'no-store',
-      });
-      return res.status === 200;
-    } finally {
-      window.clearTimeout(timer);
-    }
+    const { status } = await nodeHttpRequest(baseUrl.replace(/\/+$/, '') + '/', { timeoutMs });
+    return status === 200;
   } catch {
     return false;
   }

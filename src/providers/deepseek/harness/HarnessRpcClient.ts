@@ -2,6 +2,7 @@ import { execFile } from 'child_process';
 import { randomUUID } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
+import { nodeHttpRequest } from './nodeHttp';
 
 /**
  * Minimal RPC client for the DeepSeek Harness desktop app's local API.
@@ -184,17 +185,8 @@ export class HarnessRpcClient {
   /** Probe the endpoint; returns true when the harness web UI is reachable. */
   async probe(timeoutMs = 2000): Promise<boolean> {
     try {
-      const controller = new AbortController();
-      const timer = window.setTimeout(() => controller.abort(), timeoutMs);
-      try {
-        const res = await fetch(this.baseUrl + '/', {
-          signal: controller.signal,
-          cache: 'no-store',
-        });
-        return res.status === 200;
-      } finally {
-        window.clearTimeout(timer);
-      }
+      const { status } = await nodeHttpRequest(this.baseUrl + '/', { timeoutMs });
+      return status === 200;
     } catch {
       return false;
     }
@@ -206,9 +198,8 @@ export class HarnessRpcClient {
     signal?: AbortSignal,
   ): Promise<T> {
     const rpcId = randomUUID();
-    const res = await fetch(this.baseUrl + '/api/' + method, {
+    const { status, text } = await nodeHttpRequest(this.baseUrl + '/api/' + method, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         type: 'client-request',
         rpcId,
@@ -216,15 +207,14 @@ export class HarnessRpcClient {
         payload,
       }),
       signal,
-      cache: 'no-store',
     });
-    if (res.status === 404) {
+    if (status === 404) {
       throw new Error(`RPC method not found: ${method}`);
     }
-    if (!res.ok) {
-      throw new Error(`RPC HTTP ${res.status} for ${method}`);
+    if (status !== 200) {
+      throw new Error(`RPC HTTP ${status} for ${method}`);
     }
-    const body = (await res.json()) as RpcResponse<T>;
+    const body = JSON.parse(await text()) as RpcResponse<T>;
     if (!body.result.ok) {
       const err = body.result.error;
       throw new Error(

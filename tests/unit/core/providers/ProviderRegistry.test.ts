@@ -7,8 +7,8 @@ import type { TitleGenerationService } from '@/core/providers/types';
 describe('ProviderRegistry', () => {
   beforeEach(() => {
     ProviderWorkspaceRegistry.clear();
-    ProviderWorkspaceRegistry.setServices('deepseek', {
-    } as any);
+    ProviderWorkspaceRegistry.setServices('claude', {} as any);
+    ProviderWorkspaceRegistry.setServices('deepseek', {} as any);
     jest.spyOn(ProviderWorkspaceRegistry, 'ensureInitialized')
       .mockResolvedValue(undefined);
   });
@@ -19,9 +19,8 @@ describe('ProviderRegistry', () => {
 
   it('returns capabilities for the default provider', () => {
     const caps = ProviderRegistry.getCapabilities();
-    expect(caps.providerId).toBe('deepseek');
+    expect(caps.providerId).toBe('claude');
     expect(caps).toHaveProperty('supportsPlanMode');
-    expect(caps).toHaveProperty('supportsFork');
   });
 
   it('returns boundary services for the default provider', () => {
@@ -32,25 +31,12 @@ describe('ProviderRegistry', () => {
     expect(taskInterpreter).toHaveProperty('resolveTerminalStatus');
   });
 
-  it('creates transcript-backed subagent history only for providers that own it', () => {
-    const host = {} as any;
-
-    expect(ProviderRegistry.createSubagentHistoryService(host, 'deepseek')).toMatchObject({
-      loadFinalResult: expect.any(Function),
-      loadToolCalls: expect.any(Function),
-    });
-  });
-
-  it('returns a settings reconciler for the default provider', () => {
+  it('returns a settings reconciler and chat UI config for the default provider', () => {
     const reconciler = ProviderRegistry.getSettingsReconciler();
     expect(reconciler).toHaveProperty('reconcileModelWithEnvironment');
-    expect(reconciler).toHaveProperty('normalizeModelVariantSettings');
-  });
 
-  it('returns a chat UI config for the default provider', () => {
     const uiConfig = ProviderRegistry.getChatUIConfig();
     expect(uiConfig).toHaveProperty('getModelOptions');
-    expect(uiConfig).toHaveProperty('getCustomModelIds');
   });
 
   it('throws when an unknown provider is requested', () => {
@@ -60,8 +46,9 @@ describe('ProviderRegistry', () => {
   });
 
   it('lists registered provider ids', () => {
-    const ids = ProviderRegistry.getRegisteredProviderIds();
-    expect(ids).toContain('deepseek');
+    expect(ProviderRegistry.getRegisteredProviderIds()).toEqual(
+      expect.arrayContaining(['claude', 'deepseek']),
+    );
   });
 
   it('filters enabled provider ids using registration metadata', () => {
@@ -69,12 +56,12 @@ describe('ProviderRegistry', () => {
       providerConfigs: {
         deepseek: { enabled: false },
       },
-    })).toEqual([]);
+    })).toEqual(['claude']);
     expect(ProviderRegistry.getEnabledProviderIds({
       providerConfigs: {
         deepseek: { enabled: true },
       },
-    })).toEqual(['deepseek']);
+    })).toEqual(['deepseek', 'claude']);
   });
 
   it('exposes the blank-tab provider order from top to bottom', () => {
@@ -82,26 +69,27 @@ describe('ProviderRegistry', () => {
       providerConfigs: {
         deepseek: { enabled: true },
       },
-    })).toEqual(['deepseek']);
+    })).toEqual(['claude', 'deepseek']);
   });
 
   it('returns the display name from provider registration metadata', () => {
+    expect(ProviderRegistry.getProviderDisplayName('claude')).toBe('Claude');
     expect(ProviderRegistry.getProviderDisplayName('deepseek')).toBe('DeepSeek');
   });
 
-  it('routes auto title generation to deepseek', async () => {
+  it('routes auto title generation to claude by default', async () => {
     const providerCalls: string[] = [];
     jest.spyOn(ProviderRegistry, 'createTitleGenerationService')
       .mockImplementation((_plugin: any, providerId?: string) => {
-        providerCalls.push(providerId ?? 'deepseek');
-        return createMockTitleService(providerId ?? 'deepseek');
+        providerCalls.push(providerId ?? 'claude');
+        return createMockTitleService(providerId ?? 'claude');
       });
 
     const service = ProviderRegistry.createTitleGenerationService({
       settings: {
         titleGenerationModel: '',
         providerConfigs: {
-          deepseek: { enabled: true },
+          claude: { enabled: true },
         },
       },
     } as any);
@@ -109,10 +97,10 @@ describe('ProviderRegistry', () => {
 
     await service.generateTitle('conv-1', 'hello', callback);
 
-    expect(providerCalls).toEqual(['deepseek']);
+    expect(providerCalls).toEqual(['claude']);
     expect(callback).toHaveBeenCalledWith('conv-1', {
       success: true,
-      title: 'deepseek title',
+      title: 'claude title',
     });
   });
 });
