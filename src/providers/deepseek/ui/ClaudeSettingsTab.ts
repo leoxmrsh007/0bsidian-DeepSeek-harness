@@ -1,16 +1,12 @@
-import * as fs from 'fs';
 import { Setting } from 'obsidian';
 
 import { ProviderSettingsCoordinator } from '../../../core/providers/ProviderSettingsCoordinator';
 import type { ProviderSettingsTabRenderer } from '../../../core/providers/types';
 import { t } from '../../../i18n/i18n';
 import { renderEnvironmentSettingsSection } from '../../../shared/settings/EnvironmentSettingsSection';
-import { renderHostnameCliPathSetting } from '../../../shared/settings/HostnameCliPathSetting';
 import { renderNativeMcpSettingsSection } from '../../../shared/settings/NativeMcpSettingsSection';
 import { renderProviderEnablementSetting } from '../../../shared/settings/ProviderEnablementSetting';
 import { renderLastEnabledProviderWarning } from '../../../shared/settings/ProviderModelEnablementWarning';
-import { getHostnameKey } from '../../../utils/env';
-import { expandHomePath } from '../../../utils/path';
 import { getClaudeWorkspaceServices } from '../app/ClaudeWorkspaceServices';
 import {
   getClaudeModelOptions,
@@ -56,9 +52,9 @@ export const claudeSettingsTabRenderer: ProviderSettingsTabRenderer = {
 
     renderProviderEnablementSetting({
       container,
-      description: t('settings.providerEnablement.desc', { provider: 'Claude' }),
+      description: t('settings.providerEnablement.desc', { provider: 'DeepSeek' }),
       getValue: () => getClaudeProviderSettings(settingsBag).enabled,
-      name: t('settings.providerEnablement.name', { provider: 'Claude' }),
+      name: t('settings.providerEnablement.name', { provider: 'DeepSeek' }),
       onChange: async (value) => {
         if (!ProviderSettingsCoordinator.canApplyProviderEnablement(
           settingsBag,
@@ -90,56 +86,26 @@ export const claudeSettingsTabRenderer: ProviderSettingsTabRenderer = {
 
     const lastProviderWarning = renderLastEnabledProviderWarning(container);
 
-    const hostnameKey = getHostnameKey();
-    const platformDesc = process.platform === 'win32'
-      ? t('settings.cliPath.descWindows')
-      : t('settings.cliPath.descUnix');
-    const cliPathDescription = `${t('settings.cliPath.desc')} ${platformDesc}`;
-
-    const validatePath = (value: string): string | null => {
-      const trimmed = value.trim();
-      if (!trimmed) return null;
-
-      const expandedPath = expandHomePath(trimmed);
-
-      if (!fs.existsSync(expandedPath)) {
-        return t('settings.cliPath.validation.notExist');
-      }
-      const stat = fs.statSync(expandedPath);
-      if (!stat.isFile()) {
-        return t('settings.cliPath.validation.isDirectory');
-      }
-      return null;
-    };
-
-    renderHostnameCliPathSetting({
-      container,
-      description: cliPathDescription,
-      getValue: () => getClaudeProviderSettings(settingsBag).cliPathsByHost[hostnameKey] || '',
-      name: t('settings.cliPath.name'),
-      onChange: async (value) => {
-        const cliPathsByHost = {
-          ...getClaudeProviderSettings(settingsBag).cliPathsByHost,
-        };
-        if (value) {
-          cliPathsByHost[hostnameKey] = value;
-        } else {
-          delete cliPathsByHost[hostnameKey];
-        }
-
-        await context.plugin.applyProviderRuntimeSettings(
-          ['deepseek'],
-          (settings) => {
-            updateClaudeProviderSettings(settings, { cliPathsByHost });
-          },
-          () => claudeWorkspace.cliResolver.reset(),
-        );
-      },
-      placeholder: process.platform === 'win32'
-        ? 'D:\\nodejs\\node_global\\node_modules\\@anthropic-ai\\claude-code\\cli-wrapper.cjs'
-        : '/usr/local/lib/node_modules/@anthropic-ai/claude-code/cli-wrapper.cjs',
-      validate: validatePath,
-    });
+    new Setting(container)
+      .setName('DeepSeek Harness URL')
+      .setDesc('Local HTTP endpoint of the DeepSeek Harness desktop app (dsh web).')
+      .addText((text) => {
+        text
+          // eslint-disable-next-line obsidianmd/ui/sentence-case -- URL placeholder
+          .setPlaceholder('http://127.0.0.1:3080')
+          .setValue(getClaudeProviderSettings(settingsBag).harnessBaseUrl)
+          .onChange(async (value) => {
+            const trimmed = value.trim();
+            await context.plugin.applyProviderRuntimeSettings(
+              ['deepseek'],
+              (settings) => {
+                updateClaudeProviderSettings(settings, {
+                  harnessBaseUrl: trimmed || 'http://127.0.0.1:3080',
+                });
+              },
+            );
+          });
+      });
 
     // --- Models ---
 
@@ -320,8 +286,8 @@ export const claudeSettingsTabRenderer: ProviderSettingsTabRenderer = {
       scope: 'provider:deepseek',
       heading: t('settings.environment'),
       name: t('settings.customVariables.name'),
-      desc: 'Runtime variables for the Claude Code CLI pointed at DeepSeek\'s Anthropic-compatible endpoint.',
-      placeholder: 'ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic\nANTHROPIC_AUTH_TOKEN=sk-...\nANTHROPIC_MODEL=deepseek-chat\nANTHROPIC_SMALL_FAST_MODEL=deepseek-chat\nANTHROPIC_DEFAULT_OPUS_MODEL=deepseek-reasoner',
+      desc: 'The DeepSeek Harness desktop app owns the API key and model route. Keep this empty unless you need to pass extra environment variables to the harness process.',
+      placeholder: 'DSH_SESSION_ROOT=/path/to/sessions\nDSH_MAX_TOKENS_AS_SUCCESS=true',
       renderCustomContextLimits: (target) => context.renderCustomContextLimits(target, 'deepseek'),
     });
 

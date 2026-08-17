@@ -96,9 +96,9 @@ const stagedObsidianRules = {
   'obsidianmd/ui/sentence-case': [
     obsidianRuleSeverity,
     {
-      ignoreWords: ['Claudian', 'Codex', 'OpenCode', 'Pi', 'WSL'],
-      brands: [...DEFAULT_BRANDS, 'Claudian', 'Codex', 'OpenCode', 'Pi'],
-      acronyms: [...DEFAULT_ACRONYMS, 'TOML', 'WSL'],
+      ignoreWords: ['Claudian', 'Codex', 'OpenCode', 'Pi', 'WSL', 'Harness'],
+      brands: [...DEFAULT_BRANDS, 'Claudian', 'Codex', 'OpenCode', 'Pi', 'DeepSeek'],
+      acronyms: [...DEFAULT_ACRONYMS, 'TOML', 'WSL', 'URL', 'HTTP'],
       ignoreRegex: ['\\.(?:claude|codex|opencode)/'],
       enforceCamelCaseLower: true,
     },
