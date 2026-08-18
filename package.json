@@ -1,6 +1,6 @@
 {
   "name": "deepseek-harness",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "DeepSeek Harness - the DeepSeek Harness coding agent embedded in Obsidian",
   "main": "main.js",
   "engines": {
