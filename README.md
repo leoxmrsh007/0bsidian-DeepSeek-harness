@@ -1,61 +1,64 @@
 # DeepSeek Harness for Obsidian
 
-Embed the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)
-coding agent (`dsh`) directly in your Obsidian vault. Your vault becomes the
-agent's working directory — file reads/writes, search, bash, and multi-step
-workflows all work from the chat sidebar.
+Embed a coding agent directly in your Obsidian vault — file reads/writes, search,
+bash, and multi-step workflows all run from the chat sidebar, with your vault as
+the agent's working directory.
 
-This plugin is a **DeepSeek Harness–only** client: it drives a running
-`dsh web` desktop app over its local HTTP API (or auto-launches it for you),
-then renders the agent's streaming text, reasoning, and tool activity inside
-Obsidian.
+The plugin ships with three selectable providers:
+
+- **DeepSeek** — the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)
+  coding agent (`dsh`), driven over its local HTTP API (or auto-launched for you).
+- **Claude** — [Claude Code](https://claude.com/claude-code), driven over the local CLI.
+- **Codex** — OpenAI Codex, driven over the Codex app-server (sign in with ChatGPT,
+  no API key required).
+
+Streaming text, reasoning, and tool activity all render inside Obsidian.
 
 > DeepSeek Harness is currently in **developer preview** and iterates quickly;
 > its local HTTP surface may change between releases.
 
 ## Requirements
 
-- Obsidian Desktop v1.7.2+
-- Node.js 22.19+ (only if you use the auto-launch fallback that spawns `dsh web`)
-- A DeepSeek API key (`DEEPSEEK_API_KEY`)
-- The DeepSeek Harness CLI, or the DeepSeek Harness desktop app:
-  ```sh
-  npm install -g @deepseek-ai/dsh
-  ```
+- Obsidian Desktop v1.7.2+ (desktop only)
+- Per provider:
+  - **DeepSeek**: a DeepSeek API key (`DEEPSEEK_API_KEY`) and the DeepSeek Harness CLI
+    (`npm install -g @deepseek-ai/dsh`), or the DeepSeek Harness desktop app.
+  - **Claude**: the Claude Code CLI (`claude`) on your `PATH`, authenticated with your
+    Anthropic account or `ANTHROPIC_API_KEY`.
+  - **Codex**: the Codex app / app-server, signed in with a ChatGPT Plus account.
 
 ## Install
 
 ### From GitHub Release (recommended)
 
 1. Download `main.js`, `manifest.json`, and `styles.css` from the
-   [latest release](https://github.com/leoxmrsh007/deepseek-harness-obsidian/releases).
+   [latest release](https://github.com/leoxmrsh007/0bsidian-DeepSeek-harness/releases).
 2. Create `<vault>/.obsidian/plugins/deepseek-harness/` and copy the three files in.
 3. Reload Obsidian and enable **DeepSeek Harness** in Settings → Community plugins.
 
 ### From source
 
 ```sh
-git clone https://github.com/leoxmrsh007/deepseek-harness-obsidian.git
-cd deepseek-harness-obsidian
+git clone https://github.com/leoxmrsh007/0bsidian-DeepSeek-harness.git
+cd 0bsidian-DeepSeek-harness
 npm ci
 npm run build          # emits main.js + styles.css
 ```
 
-## First-start acceptance
+## First start
 
-1. Set `DEEPSEEK_API_KEY` in your shell, then start the harness:
+1. In Settings, enable the provider you want (Claude / Codex / DeepSeek).
+2. **DeepSeek** — set `DEEPSEEK_API_KEY` in your shell, then start the harness:
    ```sh
    dsh web        # serves http://127.0.0.1:3080
    ```
-   (Or leave it stopped — the plugin auto-launches it by default.)
-2. In Obsidian → Settings → DeepSeek Harness, confirm the
-   **DeepSeek Harness URL** is `http://127.0.0.1:3080` and the provider is enabled.
-3. Open the chat sidebar (ribbon icon or command `DeepSeek Harness: Open chat`).
-4. Send: `只回复 OK，不要读写任何文件。`
-5. Open a note and send: `只读取当前笔记并概括三点，不要修改文件。` and confirm
-   the streamed reply and tool cards render.
+   Or leave it stopped — the plugin auto-launches it by default. Confirm the
+   **DeepSeek Harness URL** is `http://127.0.0.1:3080`.
+3. **Claude** — make sure the `claude` CLI is on your `PATH` and authenticated.
+4. **Codex** — sign in to the Codex app / app-server.
+5. Open the chat sidebar (ribbon icon or command) and send a test message.
 
-If the harness is reachable in a terminal but not from Obsidian, set an explicit
+If a harness/CLI is reachable in a terminal but not from Obsidian, set an explicit
 path in the provider settings (GUI-launched Obsidian may not see npm global shims).
 
 ## Docs
