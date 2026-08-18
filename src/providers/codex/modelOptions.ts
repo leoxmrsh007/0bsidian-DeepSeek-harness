@@ -96,6 +96,15 @@ export function getCodexModelOptions(settings: Record<string, unknown>): Provide
     });
   }
 
+  if (visibleModelIds.includes('chatgpt') && !seenModelIds.has('chatgpt')) {
+    seenModelIds.add('chatgpt');
+    models.unshift({
+      value: 'chatgpt',
+      label: 'ChatGPT (Plus 订阅)',
+      description: '通过 ChatGPT 登录使用 Codex，无需 API key',
+    });
+  }
+
   const envModel = getConfiguredEnvCustomModel(settings);
   if (envModel) {
     const runtimeModelId = toCodexRuntimeModelId(envModel);
@@ -162,6 +171,9 @@ export function resolveCodexModelSelection(
     codexSettings.discoveredModels,
   );
   const firstVisibleModelId = visibleModelIds.find(modelId => {
+    if (modelId === 'chatgpt') {
+      return true;
+    }
     const model = codexSettings.discoveredModels.find(candidate => candidate.model === modelId);
     return model && isCodexModelAvailable(model, codexSettings.enableUltraEffort);
   });

@@ -268,12 +268,13 @@ export function getVisibleCodexModelIds(
   const defaultModel = getDefaultCodexModel(discoveredModels);
   return defaultModel
     ? [
+      'chatgpt',
       defaultModel.model,
       ...discoveredModels
         .filter(model => model.model !== defaultModel.model)
         .map(model => model.model),
     ]
-    : [];
+    : ['chatgpt'];
 }
 
 function pruneCodexModelAliases(

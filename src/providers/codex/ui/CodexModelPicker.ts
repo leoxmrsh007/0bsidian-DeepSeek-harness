@@ -43,6 +43,9 @@ export function renderCodexModelPicker(
     );
     const selectedIds = visibleModelIds;
     const defaultModelId = selectedIds.find((modelId) => {
+      if (modelId === 'chatgpt') {
+        return true;
+      }
       const model = current.discoveredModels.find(candidate => candidate.model === modelId);
       return Boolean(model && isCodexModelAvailable(model, current.enableUltraEffort));
     }) ?? null;

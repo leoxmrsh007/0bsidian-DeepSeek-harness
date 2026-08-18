@@ -17,5 +17,5 @@ export function toCodexRuntimeModelId(modelId: string): string {
 }
 
 export function looksLikeCodexModel(modelId: string): boolean {
-  return /^gpt-/i.test(modelId) || /^o\d/i.test(modelId);
+  return /^gpt-/i.test(modelId) || /^o\d/i.test(modelId) || modelId.toLowerCase() === 'chatgpt';
 }
