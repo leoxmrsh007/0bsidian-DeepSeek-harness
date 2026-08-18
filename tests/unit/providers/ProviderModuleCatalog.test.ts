@@ -14,6 +14,7 @@ describe('built-in ProviderModule catalog', () => {
   it('is the single ordered source for chat, workspace, and settings composition', () => {
     expect(BUILT_IN_PROVIDER_MODULES.map(module => module.id)).toEqual([
       'claude',
+      'codex',
       'deepseek',
     ]);
     for (const module of BUILT_IN_PROVIDER_MODULES) {
@@ -42,6 +43,7 @@ describe('built-in ProviderModule catalog', () => {
 
     const defaultEnabled: Record<string, boolean> = {
       claude: true,
+      codex: false,
       deepseek: false,
     };
 

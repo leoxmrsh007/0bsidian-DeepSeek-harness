@@ -90,6 +90,11 @@ describe('CodexChatUIConfig', () => {
 
       expect(options).toEqual([
         {
+          value: 'chatgpt',
+          label: 'ChatGPT (Plus 订阅)',
+          description: '通过 ChatGPT 登录使用 Codex，无需 API key',
+        },
+        {
           value: 'gpt-5.6-luna',
           label: 'GPT-5.6-Luna',
           description: 'Fast and affordable agentic coding model.',
@@ -127,6 +132,11 @@ describe('CodexChatUIConfig', () => {
 
       expect(options).toEqual([
         {
+          value: 'chatgpt',
+          label: 'ChatGPT (Plus 订阅)',
+          description: '通过 ChatGPT 登录使用 Codex，无需 API key',
+        },
+        {
           value: 'gpt-5.4-mini',
           label: 'GPT-5.4 Mini',
           description: 'Fast',
@@ -155,7 +165,7 @@ describe('CodexChatUIConfig', () => {
       }));
       expect(options[0].value).toBe('openai-codex/my-custom-model');
       expect(options[0].description).toBe('Custom (env)');
-      expect(options.length).toBe(3);
+      expect(options.length).toBe(4);
     });
 
     it('deduplicates env and settings-defined custom models', () => {
@@ -170,6 +180,7 @@ describe('CodexChatUIConfig', () => {
 
       expect(options.map(option => option.value)).toEqual([
         'openai-codex/my-custom-model',
+        'chatgpt',
         'gpt-5.4-mini',
         TEST_CODEX_MODEL,
         'openai-codex/second-custom-model',
@@ -180,7 +191,7 @@ describe('CodexChatUIConfig', () => {
       const options = codexChatUIConfig.getModelOptions(withDiscoveredModels({
         environmentVariables: `OPENAI_MODEL=${TEST_CODEX_MODEL}`,
       }));
-      expect(options.length).toBe(2);
+      expect(options.length).toBe(3);
     });
 
     it('only includes discovered models selected by the visibility filter', () => {
@@ -253,7 +264,11 @@ describe('CodexChatUIConfig', () => {
         },
       });
 
-      expect(options).toEqual([]);
+      expect(options).toEqual([{
+        value: 'chatgpt',
+        label: 'ChatGPT (Plus 订阅)',
+        description: '通过 ChatGPT 登录使用 Codex，无需 API key',
+      }]);
     });
 
     it('does not treat another provider current model as a Codex fallback', () => {
@@ -266,7 +281,11 @@ describe('CodexChatUIConfig', () => {
             visibleModels: null,
           },
         },
-      })).toEqual([]);
+      })).toEqual([{
+        value: 'chatgpt',
+        label: 'ChatGPT (Plus 订阅)',
+        description: '通过 ChatGPT 登录使用 Codex，无需 API key',
+      }]);
     });
 
     it('deduplicates an unavailable current model against OPENAI_MODEL', () => {
@@ -281,11 +300,18 @@ describe('CodexChatUIConfig', () => {
         },
       });
 
-      expect(options).toEqual([{
-        value: 'openai-codex/gpt-env-model',
-        label: 'GPT-env Model',
-        description: 'Custom (env)',
-      }]);
+      expect(options).toEqual([
+        {
+          value: 'openai-codex/gpt-env-model',
+          label: 'GPT-env Model',
+          description: 'Custom (env)',
+        },
+        {
+          value: 'chatgpt',
+          label: 'ChatGPT (Plus 订阅)',
+          description: '通过 ChatGPT 登录使用 Codex，无需 API key',
+        },
+      ]);
     });
   });
 

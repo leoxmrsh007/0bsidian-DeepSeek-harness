@@ -98,6 +98,7 @@ describe('codex settings', () => {
     ] as any;
 
     expect(getVisibleCodexModelIds(null, discoveredModels)).toEqual([
+      'chatgpt',
       'gpt-5.5',
       'gpt-5.4-mini',
     ]);

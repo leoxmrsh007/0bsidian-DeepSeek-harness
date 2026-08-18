@@ -247,7 +247,7 @@ describe('codexSettingsReconciler', () => {
     const result = codexSettingsReconciler.reconcileModelWithEnvironment(settings, []);
 
     expect(result.changed).toBe(true);
-    expect(settings.model).toBe(TEST_CODEX_MODEL);
+    expect(settings.model).toBe('chatgpt');
     expect(isVersionedRuntimeInputFingerprint(
       (settings.providerConfigs as any).codex.environmentHash,
     )).toBe(true);

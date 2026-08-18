@@ -149,23 +149,7 @@ const allowedProviderAppImports = new Set([
   ),
   resolvedImportKey(
     path.join(providersRoot, 'claude', 'storage', 'StorageService.ts'),
-    path.join(appRoot, 'settings', 'ClaudianSettingsStorage'),
-  ),
-  resolvedImportKey(
-    path.join(providersRoot, 'claude', 'storage', 'ClaudianSettingsStorage.ts'),
-    path.join(appRoot, 'settings', 'ClaudianSettingsStorage'),
-  ),
-  resolvedImportKey(
-    path.join(providersRoot, 'deepseek', 'types', 'settings.ts'),
-    path.join(appRoot, 'settings', 'defaultSettings'),
-  ),
-  resolvedImportKey(
-    path.join(providersRoot, 'deepseek', 'storage', 'StorageService.ts'),
-    path.join(appRoot, 'settings', 'ClaudianSettingsStorage'),
-  ),
-  resolvedImportKey(
-    path.join(providersRoot, 'deepseek', 'storage', 'ClaudianSettingsStorage.ts'),
-    path.join(appRoot, 'settings', 'ClaudianSettingsStorage'),
+    path.join(appRoot, 'settings', 'DeepSeekHarnessSettingsStorage'),
   ),
 ]);
 
@@ -241,7 +225,7 @@ test('features and shared UI are independent from concrete providers', () => {
 test('persisted settings changes use the coordinator boundary', () => {
   const matches = findMatches([sourceRoot], /\.saveSettings\(\)/).filter(file => ![
     'src/main.ts',
-    'src/app/providers/ClaudianProviderHost.ts',
+    'src/app/providers/DeepSeekHarnessProviderHost.ts',
   ].includes(file));
   assert.deepEqual(matches, []);
 });

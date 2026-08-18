@@ -203,9 +203,9 @@ describe('CodexModelPicker', () => {
     );
     expect(settingClasses).toContain('claudian-provider-model-picker-setting');
     expect(elements.filter(element => element.attrs.type === 'checkbox').map(element => element.checked))
-      .toEqual([true, true]);
+      .toEqual([true, true, true]);
     expect(elements.filter(element => element.tag === 'label' && element.title).map(element => element.title))
-      .toEqual(['gpt-5.4-mini', 'gpt-5.5']);
+      .toEqual(['gpt-5.4-mini', 'gpt-5.5', 'chatgpt']);
 
     const aliasField = findElement(element =>
       element.classes.has('claudian-provider-model-picker-selected-alias-field')
@@ -252,8 +252,8 @@ describe('CodexModelPicker', () => {
 
     expect(preventDefault).toHaveBeenCalledTimes(1);
     expect(getCodexProviderSettings(plugin.settings).visibleModels).toEqual([
-      'gpt-5.4-mini',
       'gpt-5.5',
+      'gpt-5.4-mini',
     ]);
   });
 
@@ -308,10 +308,10 @@ describe('CodexModelPicker', () => {
     });
     await flushPromises();
 
-    expect(dataTransfer.setData).toHaveBeenCalledWith('text/plain', 'gpt-5.4-mini');
+    expect(dataTransfer.setData).toHaveBeenCalledWith('text/plain', 'gpt-5.5');
     expect(getCodexProviderSettings(plugin.settings).visibleModels).toEqual([
-      'gpt-5.4-mini',
       'gpt-5.5',
+      'gpt-5.4-mini',
     ]);
   });
 
@@ -339,6 +339,7 @@ describe('CodexModelPicker', () => {
     ).text).toBe('Unavailable');
     expect(findElement(element =>
       element.classes.has('claudian-provider-model-picker-selected-unavailable')
+      && element.parent?.parent?.attrs['data-model-id'] === 'gpt-ultra-only'
     ).text).toBe('Requires Ultra effort to be enabled');
   });
 
