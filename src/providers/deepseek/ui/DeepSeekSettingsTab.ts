@@ -1,4 +1,4 @@
-import { Setting } from 'obsidian';
+import { Notice, Setting } from 'obsidian';
 
 import { ProviderSettingsCoordinator } from '../../../core/providers/ProviderSettingsCoordinator';
 import type { ProviderSettingsTabRenderer } from '../../../core/providers/types';
@@ -6,6 +6,11 @@ import { t } from '../../../i18n/i18n';
 import { renderEnvironmentSettingsSection } from '../../../shared/settings/EnvironmentSettingsSection';
 import { renderProviderEnablementSetting } from '../../../shared/settings/ProviderEnablementSetting';
 import { renderLastEnabledProviderWarning } from '../../../shared/settings/ProviderModelEnablementWarning';
+import {
+  HarnessAppLauncher,
+  type HarnessFailureReason,
+  type HarnessLaunchConfig,
+} from '../harness/HarnessAppLauncher';
 import {
   getDeepSeekProviderSettings,
   updateDeepSeekProviderSettings,
@@ -91,6 +96,94 @@ export const deepseekSettingsTabRenderer: ProviderSettingsTabRenderer = {
             );
           });
       });
+
+    new Setting(container)
+      .setName('DeepSeek Harness binary path')
+      .setDesc('Optional explicit path to the `dsh` executable. Leave empty to resolve via PATH.')
+      .addText((text) => {
+        text
+          // eslint-disable-next-line obsidianmd/ui/sentence-case -- binary command placeholder
+          .setPlaceholder('dsh')
+          .setValue(getDeepSeekProviderSettings(settingsBag).dshPath)
+          .onChange(async (value) => {
+            await context.plugin.applyProviderRuntimeSettings(
+              ['deepseek'],
+              (settings) => {
+                updateDeepSeekProviderSettings(settings, { dshPath: value.trim() });
+              },
+            );
+          });
+      });
+
+    // --- Harness status ---
+
+    const harnessBaseUrl = () => getDeepSeekProviderSettings(settingsBag).harnessBaseUrl;
+    const harnessLaunchConfig = (): HarnessLaunchConfig => {
+      const settings = getDeepSeekProviderSettings(settingsBag);
+      return {
+        autoLaunch: settings.autoLaunch,
+        dshPath: settings.dshPath,
+        environmentText: context.plugin.getActiveEnvironmentVariables('deepseek'),
+      };
+    };
+
+    const statusSetting = new Setting(container)
+      .setName(t('settings.deepseekHarness.status'))
+      .setDesc('');
+
+    const renderHarnessStatus = (): void => {
+      const status = HarnessAppLauncher.get().getStatus();
+      let text: string;
+      switch (status.kind) {
+        case 'online':
+          text = t('settings.deepseekHarness.online');
+          break;
+        case 'starting':
+          text = t('settings.deepseekHarness.starting');
+          break;
+        case 'offline':
+          text = t('settings.deepseekHarness.offline');
+          break;
+        case 'failed': {
+          const reasonText: Record<HarnessFailureReason, string> = {
+            'dsh-not-found': t('settings.deepseekHarness.notFound'),
+            'spawn-failed': t('settings.deepseekHarness.spawnFailed'),
+            'exited-early': t('settings.deepseekHarness.exitedEarly'),
+            timeout: t('settings.deepseekHarness.timeout'),
+          };
+          text = reasonText[status.reason];
+          if (status.detail) {
+            text += `\n${status.detail}`;
+          }
+          break;
+        }
+      }
+      statusSetting.descEl.setText(text);
+    };
+    renderHarnessStatus();
+
+    new Setting(container)
+      .setDesc(t('settings.deepseekHarness.statusDesc'))
+      .addButton((button) => button
+        .setButtonText(t('settings.deepseekHarness.check'))
+        .onClick(async () => {
+          const url = harnessBaseUrl();
+          const ok = await HarnessAppLauncher.get().ensureRunning(url, harnessLaunchConfig());
+          new Notice(ok
+            ? t('settings.deepseekHarness.connectOk', { url })
+            : t('settings.deepseekHarness.connectFailed', { url }));
+          renderHarnessStatus();
+        }))
+      .addButton((button) => button
+        .setButtonText(t('settings.deepseekHarness.restart'))
+        .onClick(async () => {
+          const url = harnessBaseUrl();
+          const ok = await HarnessAppLauncher.get().restart(url, harnessLaunchConfig());
+          new Notice(ok
+            ? t('settings.deepseekHarness.connectOk', { url })
+            : t('settings.deepseekHarness.connectFailed', { url }));
+          renderHarnessStatus();
+        }));
 
     // --- Environment ---
 

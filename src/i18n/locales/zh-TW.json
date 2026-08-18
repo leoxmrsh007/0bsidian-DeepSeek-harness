@@ -71,6 +71,21 @@
     }
   },
   "settings": {
+    "deepseekHarness": {
+      "status": "DeepSeek Harness 状态",
+      "statusDesc": "检测本地 `dsh` 可执行文件，并管理后台 harness 进程。",
+      "check": "检测并连接",
+      "restart": "重启",
+      "online": "Harness 已连接。",
+      "offline": "Harness 未运行。",
+      "starting": "正在启动 Harness…",
+      "notFound": "未找到 `dsh`。请安装 DeepSeek Harness（`npm install -g @deepseek-ai/dsh`），或设置显式的可执行文件路径。",
+      "spawnFailed": "无法启动 `dsh web`。",
+      "exitedEarly": "`dsh web` 在就绪前已退出。",
+      "timeout": "`dsh web` 未在限定时间内就绪。",
+      "connectOk": "DeepSeek Harness 已在 {url} 可达。",
+      "connectFailed": "无法连接到 DeepSeek Harness：{url}。"
+    },
     "title": "DeepSeek Harness 設定",
     "tabs": {
       "general": "一般",

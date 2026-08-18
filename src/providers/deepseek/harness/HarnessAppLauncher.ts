@@ -1,4 +1,4 @@
-import { type ChildProcess,spawn } from 'child_process';
+import { type ChildProcess, spawn } from 'child_process';
 
 import { findCliBinaryPath } from '../../../utils/cliBinaryLocator';
 import { parseEnvironmentVariables } from '../../../utils/env';
@@ -14,8 +14,23 @@ export interface HarnessLaunchConfig {
   readonly environmentText?: string;
 }
 
+/** Machine-readable reason a harness launch (or readiness wait) failed. */
+export type HarnessFailureReason =
+  | 'dsh-not-found'
+  | 'spawn-failed'
+  | 'exited-early'
+  | 'timeout';
+
+/** Observable state of the owned `dsh web` subprocess. */
+export type HarnessStatus =
+  | { kind: 'online' }
+  | { kind: 'starting' }
+  | { kind: 'offline' }
+  | { kind: 'failed'; reason: HarnessFailureReason; detail?: string };
+
 const READINESS_POLL_INTERVAL_MS = 500;
 const READINESS_TIMEOUT_MS = 20_000;
+const STDERR_TAIL_MAX = 2000;
 
 /**
  * Lazily starts and owns the `dsh web` desktop app subprocess.
@@ -24,6 +39,10 @@ const READINESS_TIMEOUT_MS = 20_000;
  * It is a long-lived server shared by every session, so the launcher is a
  * module-level singleton that reuses one child across the plugin lifetime and
  * reaps it on plugin unload (through the workspace dispose path).
+ *
+ * The launcher also records a human-consumable {@link HarnessFailureReason}
+ * whenever startup fails, so the settings UI can explain *why* (missing `dsh`,
+ * exited early, timed out) instead of only reporting a boolean.
  */
 export class HarnessAppLauncher {
   private static instance: HarnessAppLauncher | null = null;
@@ -36,6 +55,51 @@ export class HarnessAppLauncher {
   private child: ChildProcess | null = null;
   private launching: Promise<boolean> | null = null;
   private disposed = false;
+  private lastFailure: HarnessFailureReason | null = null;
+  private lastFailureDetail: string | null = null;
+  private lastProbeOk = false;
+
+  /** Probe the endpoint and record reachability without launching anything. */
+  async check(baseUrl: string): Promise<boolean> {
+    if (this.disposed) return false;
+    const ok = await probeHarness(baseUrl);
+    this.lastProbeOk = ok;
+    if (ok) {
+      this.lastFailure = null;
+      this.lastFailureDetail = null;
+    }
+    return ok;
+  }
+
+  /** Resolve the `dsh` binary path: explicit setting first, then PATH lookup. */
+  detectDshPath(config: HarnessLaunchConfig): string | null {
+    const explicit = (config.dshPath ?? '').trim();
+    if (explicit) {
+      return explicit;
+    }
+    return findCliBinaryPath('dsh');
+  }
+
+  /** Current observable status of the harness subprocess. */
+  getStatus(): HarnessStatus {
+    if (this.disposed) {
+      return { kind: 'offline' };
+    }
+    if (this.launching) {
+      return { kind: 'starting' };
+    }
+    if (this.lastFailure) {
+      return {
+        kind: 'failed',
+        reason: this.lastFailure,
+        ...(this.lastFailureDetail ? { detail: this.lastFailureDetail } : {}),
+      };
+    }
+    if (this.lastProbeOk || (this.child !== null && this.child.exitCode === null)) {
+      return { kind: 'online' };
+    }
+    return { kind: 'offline' };
+  }
 
   /**
    * Ensure the harness endpoint is reachable, launching `dsh web` when it is
@@ -43,8 +107,16 @@ export class HarnessAppLauncher {
    */
   async ensureRunning(baseUrl: string, config: HarnessLaunchConfig): Promise<boolean> {
     if (this.disposed) return false;
-    if (await probeHarness(baseUrl)) return true;
-    if (!config.autoLaunch) return false;
+    if (await probeHarness(baseUrl)) {
+      this.lastProbeOk = true;
+      this.lastFailure = null;
+      this.lastFailureDetail = null;
+      return true;
+    }
+    this.lastProbeOk = false;
+    if (!config.autoLaunch) {
+      return false;
+    }
 
     this.launching ??= this.launch(baseUrl, config);
     const running = await this.launching;
@@ -52,9 +124,22 @@ export class HarnessAppLauncher {
     return running;
   }
 
+  /** Kill the owned subprocess (if any) and launch it again. */
+  async restart(baseUrl: string, config: HarnessLaunchConfig): Promise<boolean> {
+    this.killChild();
+    this.lastFailure = null;
+    this.lastFailureDetail = null;
+    this.lastProbeOk = false;
+    return this.ensureRunning(baseUrl, config);
+  }
+
   /** Reap the owned subprocess. Idempotent and terminal. */
   dispose(): void {
     this.disposed = true;
+    this.killChild();
+  }
+
+  private killChild(): void {
     const child = this.child;
     this.child = null;
     if (child && child.exitCode === null && child.pid) {
@@ -66,15 +151,17 @@ export class HarnessAppLauncher {
     }
   }
 
-  private resolveDshPath(config: HarnessLaunchConfig): string | null {
-    const explicit = (config.dshPath ?? '').trim();
-    if (explicit) return explicit;
-    return findCliBinaryPath('dsh');
+  private fail(reason: HarnessFailureReason, detail?: string): void {
+    this.lastFailure = reason;
+    this.lastFailureDetail = detail ?? null;
   }
 
   private async launch(baseUrl: string, config: HarnessLaunchConfig): Promise<boolean> {
-    const dshPath = this.resolveDshPath(config);
-    if (!dshPath) return false;
+    const dshPath = this.detectDshPath(config);
+    if (!dshPath) {
+      this.fail('dsh-not-found');
+      return false;
+    }
 
     const port = extractPort(baseUrl) ?? 3080;
     const environment = {
@@ -82,25 +169,60 @@ export class HarnessAppLauncher {
       ...parseEnvironmentVariables(config.environmentText ?? ''),
     };
 
+    let child: ChildProcess;
     try {
-      this.child = spawn(dshPath, ['web', '--port', String(port)], {
+      child = spawn(dshPath, ['web', '--port', String(port)], {
         env: environment,
         stdio: ['ignore', 'ignore', 'pipe'],
         windowsHide: true,
       });
-    } catch {
+    } catch (err) {
+      this.fail('spawn-failed', err instanceof Error ? err.message : String(err));
       return false;
     }
 
+    this.child = child;
+    let stderrTail = '';
+    if (child.stderr) {
+      child.stderr.on('data', (chunk: Buffer) => {
+        stderrTail = (stderrTail + chunk.toString()).slice(-STDERR_TAIL_MAX);
+      });
+    }
+    child.once('error', (err) => {
+      if (this.child === child) {
+        this.child = null;
+      }
+      this.fail('spawn-failed', err instanceof Error ? err.message : String(err));
+    });
+    child.once('exit', () => {
+      if (this.child === child) {
+        this.child = null;
+      }
+      // Only record a reason if startup hasn't already been flagged.
+      if (!this.lastFailure) {
+        this.fail('exited-early', stderrTail.trim() || undefined);
+      }
+    });
+
     const deadline = Date.now() + READINESS_TIMEOUT_MS;
     while (Date.now() < deadline) {
-      if (this.child.exitCode !== null) {
-        // The app exited before becoming ready (bad port, missing key, etc.).
+      if (child.exitCode !== null) {
+        if (!this.lastFailure) {
+          this.fail('exited-early', stderrTail.trim() || undefined);
+        }
         return false;
       }
-      if (await probeHarness(baseUrl)) return true;
+      if (await probeHarness(baseUrl)) {
+        this.lastProbeOk = true;
+        this.lastFailure = null;
+        this.lastFailureDetail = null;
+        return true;
+      }
       await sleep(READINESS_POLL_INTERVAL_MS);
     }
+
+    // Timed out waiting; keep the process running but surface the wait failure.
+    this.fail('timeout', stderrTail.trim() || undefined);
     return false;
   }
 }

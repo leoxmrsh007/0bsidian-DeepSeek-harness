@@ -71,6 +71,21 @@
     }
   },
   "settings": {
+    "deepseekHarness": {
+      "status": "DeepSeek Harness status",
+      "statusDesc": "Detect the local `dsh` binary and manage the background harness process.",
+      "check": "Check & connect",
+      "restart": "Restart",
+      "online": "Harness is reachable.",
+      "offline": "Harness is not running.",
+      "starting": "Starting harness…",
+      "notFound": "`dsh` was not found. Install DeepSeek Harness (`npm install -g @deepseek-ai/dsh`) or set an explicit binary path.",
+      "spawnFailed": "Could not start `dsh web`.",
+      "exitedEarly": "`dsh web` exited before becoming ready.",
+      "timeout": "`dsh web` did not become ready in time.",
+      "connectOk": "DeepSeek Harness is reachable at {url}.",
+      "connectFailed": "Could not reach DeepSeek Harness at {url}."
+    },
     "title": "DeepSeek Harness Einstellungen",
     "tabs": {
       "general": "Allgemein",
