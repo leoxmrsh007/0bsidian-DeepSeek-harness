@@ -1,4 +1,4 @@
-# DeepSeek Harness for Obsidian
+# DeepSeek Vault Harness for Obsidian
 
 Embed a coding agent directly in your Obsidian vault — file reads/writes, search,
 bash, and multi-step workflows all run from the chat sidebar, with your vault as
@@ -33,8 +33,8 @@ Streaming text, reasoning, and tool activity all render inside Obsidian.
 
 1. Download `main.js`, `manifest.json`, and `styles.css` from the
    [latest release](https://github.com/leoxmrsh007/0bsidian-DeepSeek-harness/releases).
-2. Create `<vault>/.obsidian/plugins/deepseek-harness/` and copy the three files in.
-3. Reload Obsidian and enable **DeepSeek Harness** in Settings → Community plugins.
+2. Create `<vault>/.obsidian/plugins/deepseek-vault-harness/` and copy the three files in.
+3. Reload Obsidian and enable **DeepSeek Vault Harness** in Settings → Community plugins.
 
 ### From source
 

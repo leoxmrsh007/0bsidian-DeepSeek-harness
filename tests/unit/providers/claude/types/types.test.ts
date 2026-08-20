@@ -29,7 +29,7 @@ import {
 describe('types.ts', () => {
   describe('VIEW_TYPE', () => {
     it('should be defined as the correct view type', () => {
-      expect(VIEW_TYPE).toBe('deepseek-harness-view');
+      expect(VIEW_TYPE).toBe('deepseek-vault-harness-view');
     });
   });
 

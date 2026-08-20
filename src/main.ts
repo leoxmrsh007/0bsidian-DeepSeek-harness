@@ -180,7 +180,7 @@ export default class DeepSeekHarnessPlugin extends Plugin {
         });
       }));
 
-      this.addRibbonIcon('bot', 'Open DeepSeek Harness', () => {
+      this.addRibbonIcon('bot', 'Open DeepSeek Vault Harness', () => {
         void this.activateView();
       });
 

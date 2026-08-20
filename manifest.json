@@ -1,9 +1,9 @@
 {
-  "id": "deepseek-harness",
-  "name": "DeepSeek Harness",
+  "id": "deepseek-vault-harness",
+  "name": "DeepSeek Vault Harness",
   "version": "0.1.2",
   "minAppVersion": "1.7.2",
-  "description": "Embeds the DeepSeek Harness coding agent in your vault. Your vault becomes its working directory — file reads/writes, search, bash, and multi-step workflows all work out of the box.",
+  "description": "Run DeepSeek Harness, Claude Code, and Codex agents in your vault with file editing, search, Bash, and multi-step workflows.",
   "author": "leoxmrsh007",
   "authorUrl": "https://github.com/leoxmrsh007",
   "isDesktopOnly": true

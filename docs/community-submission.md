@@ -1,59 +1,29 @@
-# Obsidian community plugin submission
+# Obsidian Community Directory submission
 
-Files for the PR to [`obsidianmd/obsidian-releases`](https://github.com/obsidianmd/obsidian-releases).
+Submit the plugin at [community.obsidian.md](https://community.obsidian.md).
+The legacy `obsidianmd/obsidian-releases` pull-request flow is no longer used.
 
-## 1. `community-plugins.json` entry
+## Plugin details
 
-Append this object to the end of the array in `community-plugins.json`:
+| Field | Value |
+| --- | --- |
+| ID | `deepseek-vault-harness` |
+| Name | `DeepSeek Vault Harness` |
+| Repository | `https://github.com/leoxmrsh007/0bsidian-DeepSeek-harness` |
+| Owner | `leoxmrsh007` |
+| Description | Run DeepSeek Harness, Claude Code, and Codex agents in your vault with file editing, search, Bash, and multi-step workflows. |
 
-```json
-{
-  "id": "deepseek-harness",
-  "name": "DeepSeek Harness",
-  "author": "leoxmrsh007",
-  "description": "Embeds the DeepSeek Harness coding agent in your vault. Your vault becomes its working directory — file reads/writes, search, bash, and multi-step workflows all work out of the box.",
-  "repo": "leoxmrsh007/0bsidian-DeepSeek-harness"
-}
-```
+## Submission steps
 
-The `id` must exactly match `manifest.json`. The marketplace reads the plugin's
-`manifest.json` and `versions.json` from the latest GitHub Release of `repo`.
+1. Sign in to the Community directory with an Obsidian account.
+2. Open **Profile** and connect the GitHub account `leoxmrsh007`.
+3. Open **Plugins** and select **New plugin**.
+4. Enter the repository URL above and select yourself as the owner.
+5. Agree to the Developer Policies and submit.
 
-## 2. PR description template
+## Release checklist
 
-**Title**
-
-```
-Add DeepSeek Harness plugin
-```
-
-**Body**
-
-```markdown
-# Add DeepSeek Harness plugin
-
-- **Plugin ID**: `deepseek-harness`
-- **Repo**: https://github.com/leoxmrsh007/0bsidian-DeepSeek-harness
-- **Latest release**: v0.1.2
-
-DeepSeek Harness embeds the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)
-coding agent (`dsh`) in Obsidian. It drives a running `dsh web` desktop app over
-its local HTTP API (or auto-launches it), then renders the agent's streaming
-text, reasoning, and tool activity in the chat sidebar. It also keeps the
-upstream Claude Code provider alongside DeepSeek, so both can be selected from
-the provider picker.
-
-## Checklist
-
-- [x] `manifest.json` published in a GitHub Release (v0.1.2)
-- [x] `manifest.json` fields: id, name, author, description, minAppVersion
-- [x] Release contains `main.js`, `manifest.json`, `styles.css`
-- [x] No `.obsidian` config, `node_modules`, or build artifacts in the repo
-```
-
-## 3. Notes for review
-
-- The plugin is desktop-only (`isDesktopOnly: true`) because it spawns the
-  `dsh` Node CLI and reads the local filesystem.
-- `minAppVersion` is `1.7.2`.
-- The upstream license is MIT (see `LICENSE`).
+- [x] `manifest.json` has a unique ID and the required plugin metadata.
+- [x] The plugin is desktop-only because it launches local CLIs and reads the local filesystem.
+- [x] The GitHub Release contains `main.js`, `manifest.json`, and `styles.css`.
+- [x] The release tag exactly matches `manifest.json` and `package.json`.
