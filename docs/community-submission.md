@@ -11,7 +11,7 @@ The legacy `obsidianmd/obsidian-releases` pull-request flow is no longer used.
 | Name | `DeepSeek Vault Harness` |
 | Repository | `https://github.com/leoxmrsh007/0bsidian-DeepSeek-harness` |
 | Owner | `leoxmrsh007` |
-| Description | Run DeepSeek Harness, Claude Code, and Codex agents in your vault with file editing, search, Bash, and multi-step workflows. |
+| Description | 在 Obsidian 库中运行 DeepSeek Harness、Claude Code 和 Codex，支持文件编辑、搜索、Bash 与多步骤工作流. |
 
 ## Submission steps
 

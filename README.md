@@ -27,6 +27,17 @@ Streaming text, reasoning, and tool activity all render inside Obsidian.
     Anthropic account or `ANTHROPIC_API_KEY`.
   - **Codex**: the Codex app / app-server, signed in with a ChatGPT Plus account.
 
+## 中文说明
+
+DeepSeek Vault Harness 让你直接在 Obsidian 侧边栏中使用 DeepSeek Harness、Claude Code 或 Codex。AI Agent 以当前 vault 为工作目录，可读取和编辑笔记、搜索文件、执行 Bash 命令并完成多步骤任务。
+
+### 中文安装与使用
+
+1. 在 Obsidian 的 **设置 → 第三方插件** 中搜索并安装 **DeepSeek Vault Harness**；也可从 GitHub Release 手动安装。
+2. 在插件设置中启用要使用的提供商：DeepSeek、Claude 或 Codex。
+3. DeepSeek 需要本地安装并启动 `dsh web`，或保持自动启动开启；Claude 需要已登录的 `claude` CLI；Codex 需要登录 Codex app 或 app-server。
+4. 点击左侧机器人图标，或执行 **Open chat view** 命令，即可开始对话。
+
 ## Install
 
 ### From GitHub Release (recommended)

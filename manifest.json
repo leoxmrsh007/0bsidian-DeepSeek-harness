@@ -3,7 +3,7 @@
   "name": "DeepSeek Vault Harness",
   "version": "0.1.3",
   "minAppVersion": "1.7.2",
-  "description": "Run DeepSeek Harness, Claude Code, and Codex agents in your vault with file editing, search, Bash, and multi-step workflows.",
+  "description": "在 Obsidian 库中运行 DeepSeek Harness、Claude Code 和 Codex，支持文件编辑、搜索、Bash 与多步骤工作流.",
   "author": "leoxmrsh007",
   "authorUrl": "https://github.com/leoxmrsh007",
   "isDesktopOnly": true
