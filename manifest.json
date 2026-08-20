@@ -1,7 +1,7 @@
 {
   "id": "deepseek-harness",
   "name": "DeepSeek Harness",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "minAppVersion": "1.7.2",
   "description": "Embeds the DeepSeek Harness coding agent in your vault. Your vault becomes its working directory — file reads/writes, search, bash, and multi-step workflows all work out of the box.",
   "author": "leoxmrsh007",
