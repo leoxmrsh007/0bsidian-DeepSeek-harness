@@ -1,6 +1,6 @@
 {
   "name": "deepseek-vault-harness",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "DeepSeek Vault Harness - coding agents embedded in Obsidian",
   "main": "main.js",
   "engines": {
