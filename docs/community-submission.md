@@ -11,9 +11,8 @@ Append this object to the end of the array in `community-plugins.json`:
   "id": "deepseek-harness",
   "name": "DeepSeek Harness",
   "author": "leoxmrsh007",
-  "description": "Embed the DeepSeek Harness coding agent in your vault. Your vault becomes its working directory — file reads/writes, search, bash, and multi-step workflows.",
-  "repo": "leoxmrsh007/deepseek-harness-obsidian",
-  "branch": "main"
+  "description": "Embeds the DeepSeek Harness coding agent in your vault. Your vault becomes its working directory — file reads/writes, search, bash, and multi-step workflows all work out of the box.",
+  "repo": "leoxmrsh007/0bsidian-DeepSeek-harness"
 }
 ```
 
@@ -34,8 +33,8 @@ Add DeepSeek Harness plugin
 # Add DeepSeek Harness plugin
 
 - **Plugin ID**: `deepseek-harness`
-- **Repo**: https://github.com/leoxmrsh007/deepseek-harness-obsidian
-- **Latest release**: v0.1.0
+- **Repo**: https://github.com/leoxmrsh007/0bsidian-DeepSeek-harness
+- **Latest release**: v0.1.2
 
 DeepSeek Harness embeds the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)
 coding agent (`dsh`) in Obsidian. It drives a running `dsh web` desktop app over
@@ -46,7 +45,7 @@ the provider picker.
 
 ## Checklist
 
-- [x] `manifest.json` + `versions.json` published in a GitHub Release (v0.1.0)
+- [x] `manifest.json` published in a GitHub Release (v0.1.2)
 - [x] `manifest.json` fields: id, name, author, description, minAppVersion
 - [x] Release contains `main.js`, `manifest.json`, `styles.css`
 - [x] No `.obsidian` config, `node_modules`, or build artifacts in the repo
