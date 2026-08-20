@@ -166,8 +166,13 @@ function createPlugin(overrides: Record<string, unknown> = {}) {
         adapter: { basePath: '/vault' },
         getAbstractFileByPath: jest.fn().mockReturnValue(null),
         getFiles: jest.fn().mockReturnValue([]),
+        getMarkdownFiles: jest.fn().mockReturnValue([]),
         on: jest.fn().mockReturnValue({}),
         offref: jest.fn(),
+      },
+      metadataCache: {
+        on: jest.fn().mockReturnValue({}),
+        getFileCache: jest.fn().mockReturnValue(null),
       },
       workspace: {
         getActiveFile: jest.fn().mockReturnValue(null),

@@ -84,7 +84,9 @@
       "exitedEarly": "`dsh web` 在就绪前已退出。",
       "timeout": "`dsh web` 未在限定时间内就绪。",
       "connectOk": "DeepSeek Harness 已在 {url} 可达。",
-      "connectFailed": "无法连接到 DeepSeek Harness：{url}。"
+      "connectFailed": "无法连接到 DeepSeek Harness：{url}。",
+      "nodeFound": "Node.js {version}（{path}）",
+      "nodeNotFound": "未在 PATH 中找到 Node.js。"
     },
     "title": "DeepSeek Harness 設定",
     "tabs": {

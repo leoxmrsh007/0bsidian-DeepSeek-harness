@@ -31,6 +31,12 @@ import {
   escapeMathDelimitersForStreaming,
   normalizeLatexMathDelimiters,
 } from '../../../utils/markdownMath';
+import {
+  buildTitleEntries,
+  linkifyNoteTitles,
+  type NoteInfo,
+  type NoteTitleEntry,
+} from '../../../utils/noteLinkify';
 import type { FeatureHost } from '../../FeatureHost';
 import { findRewindContext } from '../rewind';
 import { formatConversationDirectoryTitle } from '../utils/conversationDirectoryTitle';
@@ -77,6 +83,8 @@ export class MessageRenderer {
   private removeFileLinkHandler: () => void;
   private closeImageModal: (() => void) | null = null;
   private isDisposed = false;
+  private noteLinkEntries: NoteTitleEntry[] = [];
+  private noteLinkEntriesDirty = true;
 
   constructor(
     plugin: FeatureHost,
@@ -107,6 +115,12 @@ export class MessageRenderer {
 
     // Register delegated click handler for file links
     this.removeFileLinkHandler = registerFileLinkHandler(this.app, this.messagesEl);
+
+    // Invalidate the auto-link title cache whenever vault structure or metadata changes.
+    this.component.registerEvent(this.app.vault.on('create', () => { this.noteLinkEntriesDirty = true; }));
+    this.component.registerEvent(this.app.vault.on('delete', () => { this.noteLinkEntriesDirty = true; }));
+    this.component.registerEvent(this.app.vault.on('rename', () => { this.noteLinkEntriesDirty = true; }));
+    this.component.registerEvent(this.app.metadataCache.on('changed', () => { this.noteLinkEntriesDirty = true; }));
   }
 
   /** Sets the messages container element. */
@@ -752,6 +766,40 @@ export class MessageRenderer {
   // ============================================
 
   /**
+   * Cached, longest-first title entries for auto-linking note mentions.
+   * Rebuilt lazily after vault create/delete/rename or metadata changes.
+   */
+  private getNoteLinkEntries(): NoteTitleEntry[] {
+    if (!this.noteLinkEntriesDirty) {
+      return this.noteLinkEntries;
+    }
+
+    const notes: NoteInfo[] = this.app.vault.getMarkdownFiles().map((file) => {
+      const cache = this.app.metadataCache.getFileCache(file);
+      const rawAliases: unknown = cache?.frontmatter?.aliases;
+      const aliases: string[] = [];
+      if (typeof rawAliases === 'string') {
+        aliases.push(rawAliases);
+      } else if (Array.isArray(rawAliases)) {
+        for (const alias of rawAliases as unknown[]) {
+          if (typeof alias === 'string') {
+            aliases.push(alias);
+          }
+        }
+      }
+      return {
+        name: file.basename,
+        path: file.path.replace(/\.md$/, ''),
+        aliases,
+      };
+    });
+
+    this.noteLinkEntries = buildTitleEntries(notes);
+    this.noteLinkEntriesDirty = false;
+    return this.noteLinkEntries;
+  }
+
+  /**
    * Renders markdown content with code block enhancements.
    */
   async renderContent(
@@ -766,10 +814,12 @@ export class MessageRenderer {
       const renderMarkdown = options?.deferMath
         ? escapeMathDelimitersForStreaming(normalizedMarkdown)
         : normalizedMarkdown;
+      // Auto-link plain-text note mentions before rendering, then escape HTML.
+      const linkedMarkdown = linkifyNoteTitles(renderMarkdown, this.getNoteLinkEntries());
       // Escape user-authored HTML first so placeholders like <meta-name> render
       // as plain text. Trusted plugin markup (image embeds) is injected only
       // after this step, otherwise it would be escaped too.
-      const safeMarkdown = escapeRawHtmlTags(renderMarkdown);
+      const safeMarkdown = escapeRawHtmlTags(linkedMarkdown);
       const displayOnlyCodeFences = prepareDisplayOnlyCodeFences(safeMarkdown);
       const processedMarkdown = replaceImageEmbedsWithHtml(
         displayOnlyCodeFences.markdown,

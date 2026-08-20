@@ -84,7 +84,9 @@
       "exitedEarly": "`dsh web` exited before becoming ready.",
       "timeout": "`dsh web` did not become ready in time.",
       "connectOk": "DeepSeek Harness is reachable at {url}.",
-      "connectFailed": "Could not reach DeepSeek Harness at {url}."
+      "connectFailed": "Could not reach DeepSeek Harness at {url}.",
+      "nodeFound": "Node.js {version} ({path})",
+      "nodeNotFound": "Node.js not found on PATH."
     },
     "title": "DeepSeek Harness 설정",
     "tabs": {

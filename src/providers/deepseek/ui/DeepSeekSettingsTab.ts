@@ -1,3 +1,4 @@
+import { execFileSync } from 'child_process';
 import { Notice, Setting } from 'obsidian';
 
 import { ProviderSettingsCoordinator } from '../../../core/providers/ProviderSettingsCoordinator';
@@ -6,6 +7,7 @@ import { t } from '../../../i18n/i18n';
 import { renderEnvironmentSettingsSection } from '../../../shared/settings/EnvironmentSettingsSection';
 import { renderProviderEnablementSetting } from '../../../shared/settings/ProviderEnablementSetting';
 import { renderLastEnabledProviderWarning } from '../../../shared/settings/ProviderModelEnablementWarning';
+import { findNodeExecutable, getEnhancedPath } from '../../../utils/env';
 import {
   HarnessAppLauncher,
   type HarnessFailureReason,
@@ -131,6 +133,23 @@ export const deepseekSettingsTabRenderer: ProviderSettingsTabRenderer = {
       .setName(t('settings.deepseekHarness.status'))
       .setDesc('');
 
+    const detectNodeInfo = (): { path: string; version: string } | null => {
+      const nodePath = findNodeExecutable(getEnhancedPath());
+      if (!nodePath) {
+        return null;
+      }
+      try {
+        const version = execFileSync(nodePath, ['--version'], {
+          encoding: 'utf8',
+          windowsHide: true,
+          timeout: 5000,
+        }).trim();
+        return { path: nodePath, version };
+      } catch {
+        return null;
+      }
+    };
+
     const renderHarnessStatus = (): void => {
       const status = HarnessAppLauncher.get().getStatus();
       let text: string;
@@ -158,6 +177,11 @@ export const deepseekSettingsTabRenderer: ProviderSettingsTabRenderer = {
           break;
         }
       }
+
+      const nodeInfo = detectNodeInfo();
+      text += nodeInfo
+        ? `\n${t('settings.deepseekHarness.nodeFound', { version: nodeInfo.version, path: nodeInfo.path })}`
+        : `\n${t('settings.deepseekHarness.nodeNotFound')}`;
       statusSetting.descEl.setText(text);
     };
     renderHarnessStatus();
