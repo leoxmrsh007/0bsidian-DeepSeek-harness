@@ -45,6 +45,7 @@ export const deepseekProviderRegistration: ProviderModule = {
       launchConfig: {
         autoLaunch: settings.autoLaunch,
         dshPath: settings.dshPath,
+        safeMode: settings.safeMode,
         environmentText: plugin.getActiveEnvironmentVariables('deepseek'),
       },
     });

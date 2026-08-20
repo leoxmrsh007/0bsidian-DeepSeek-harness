@@ -125,6 +125,7 @@ export const deepseekSettingsTabRenderer: ProviderSettingsTabRenderer = {
       return {
         autoLaunch: settings.autoLaunch,
         dshPath: settings.dshPath,
+        safeMode: settings.safeMode,
         environmentText: context.plugin.getActiveEnvironmentVariables('deepseek'),
       };
     };

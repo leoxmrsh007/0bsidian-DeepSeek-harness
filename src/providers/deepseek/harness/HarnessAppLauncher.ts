@@ -12,6 +12,8 @@ export interface HarnessLaunchConfig {
   readonly dshPath?: string;
   /** Provider-scoped environment variables merged into the child process. */
   readonly environmentText?: string;
+  /** DeepSeek Harness permission mode (`acceptEdits` / `auto` / `default`). */
+  readonly safeMode?: string;
 }
 
 /** Machine-readable reason a harness launch (or readiness wait) failed. */
@@ -164,10 +166,16 @@ export class HarnessAppLauncher {
     }
 
     const port = extractPort(baseUrl) ?? 3080;
-    const environment = {
+    const environment: NodeJS.ProcessEnv = {
       ...process.env,
       ...parseEnvironmentVariables(config.environmentText ?? ''),
     };
+    // Surface the plugin's safe-mode as DSH's own permission mode. When DSH
+    // lacks a sandbox for the requested mode it fails closed itself; this just
+    // stops us from silently running with DSH's default.
+    if (config.safeMode) {
+      environment.DSH_PERMISSION_MODE = config.safeMode;
+    }
 
     let child: ChildProcess;
     try {

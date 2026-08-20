@@ -6,7 +6,7 @@ import { getBuiltInProviderDefaultConfigs } from '../../providers/defaultProvide
 export const DEFAULT_SETTINGS: DeepSeekHarnessSettings = {
   userName: '',
 
-  permissionMode: 'yolo',
+  permissionMode: 'normal',
 
   model: 'haiku',
   thinkingBudget: 'off',

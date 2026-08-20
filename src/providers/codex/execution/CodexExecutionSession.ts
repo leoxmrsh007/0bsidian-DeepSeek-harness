@@ -1124,6 +1124,7 @@ export class CodexExecutionSession
             : {}),
         },
       );
+      assertCodexSandboxApplied(result.sandbox);
       this.loadedThreadId = result.thread.id;
       return {
         threadId: result.thread.id,
@@ -1163,6 +1164,7 @@ export class CodexExecutionSession
         ...(dynamicTools.length > 0 ? { dynamicTools } : {}),
       },
     );
+    assertCodexSandboxApplied(result.sandbox);
     this.loadedThreadId = result.thread.id;
     this.workspaceDependencyToolVersion = dynamicTools.some(spec =>
       spec.namespace === CODEX_WORKSPACE_DEPENDENCY_TOOL_NAMESPACE
@@ -2106,6 +2108,14 @@ function resolveCodexSandboxConfig(
     return { approvalPolicy: 'on-request', sandbox: 'workspace-write' };
   }
   return { approvalPolicy: 'on-request', sandbox: safeMode };
+}
+
+export function assertCodexSandboxApplied(applied: SandboxPolicy | undefined): void {
+  if (applied?.type === 'externalSandbox') {
+    throw new Error(
+      'Codex delegated the sandbox to an external backend; refusing to continue without the requested sandbox.',
+    );
+  }
 }
 
 function strictReadOnlySandbox(): SandboxPolicy {

@@ -1,9 +1,3 @@
-import { spawn } from 'child_process';
-
-jest.mock('child_process', () => ({
-  spawn: jest.fn(),
-}));
-
 import type { HarnessAppLauncher as HarnessAppLauncherClass } from '../../../../src/providers/deepseek/harness/HarnessAppLauncher';
 
 interface LauncherMocks {
@@ -11,11 +5,18 @@ interface LauncherMocks {
   nodeHttpRequest?: jest.Mock;
 }
 
+interface LauncherBundle {
+  Launcher: typeof HarnessAppLauncherClass;
+  spawn: jest.Mock;
+}
+
 const launcherPath = '../../../../src/providers/deepseek/harness/HarnessAppLauncher';
 
-async function loadLauncher(mocks: LauncherMocks = {}): Promise<typeof HarnessAppLauncherClass> {
+async function loadLauncher(mocks: LauncherMocks = {}): Promise<LauncherBundle> {
   jest.resetModules();
 
+  const spawn = jest.fn();
+  jest.doMock('child_process', () => ({ spawn }));
   jest.doMock('../../../../src/utils/cliBinaryLocator', () => ({
     findCliBinaryPath: mocks.findCliBinaryPath ?? jest.fn(() => null),
   }));
@@ -27,7 +28,23 @@ async function loadLauncher(mocks: LauncherMocks = {}): Promise<typeof HarnessAp
   const mod = require(launcherPath) as {
     HarnessAppLauncher: typeof HarnessAppLauncherClass;
   };
-  return mod.HarnessAppLauncher;
+  return { Launcher: mod.HarnessAppLauncher, spawn };
+}
+
+function makeChild(): {
+  pid: number;
+  exitCode: null;
+  stderr: { on: jest.Mock };
+  once: jest.Mock;
+  kill: jest.Mock;
+} {
+  return {
+    pid: 42,
+    exitCode: null,
+    stderr: { on: jest.fn() },
+    once: jest.fn(),
+    kill: jest.fn(),
+  };
 }
 
 const CONFIG = {
@@ -38,7 +55,7 @@ const CONFIG = {
 
 describe('HarnessAppLauncher', () => {
   it('prefers an explicit dsh path over PATH lookup', async () => {
-    const Launcher = await loadLauncher({
+    const { Launcher } = await loadLauncher({
       findCliBinaryPath: jest.fn(() => '/usr/local/bin/dsh'),
     });
 
@@ -47,7 +64,7 @@ describe('HarnessAppLauncher', () => {
   });
 
   it('falls back to PATH lookup when no explicit path is configured', async () => {
-    const Launcher = await loadLauncher({
+    const { Launcher } = await loadLauncher({
       findCliBinaryPath: jest.fn(() => '/usr/local/bin/dsh'),
     });
 
@@ -56,12 +73,12 @@ describe('HarnessAppLauncher', () => {
   });
 
   it('starts offline', async () => {
-    const Launcher = await loadLauncher();
+    const { Launcher } = await loadLauncher();
     expect(Launcher.get().getStatus()).toEqual({ kind: 'offline' });
   });
 
   it('records dsh-not-found when the binary cannot be resolved', async () => {
-    const Launcher = await loadLauncher({
+    const { Launcher, spawn } = await loadLauncher({
       findCliBinaryPath: jest.fn(() => null),
       nodeHttpRequest: jest.fn(() => Promise.reject(new Error('ECONNREFUSED'))),
     });
@@ -73,7 +90,7 @@ describe('HarnessAppLauncher', () => {
   });
 
   it('reports online after a successful probe', async () => {
-    const Launcher = await loadLauncher({
+    const { Launcher } = await loadLauncher({
       nodeHttpRequest: jest.fn(() => Promise.resolve({ status: 200 })),
     });
 
@@ -83,7 +100,7 @@ describe('HarnessAppLauncher', () => {
   });
 
   it('clears a previous failure after a successful restart', async () => {
-    const Launcher = await loadLauncher({
+    const { Launcher } = await loadLauncher({
       findCliBinaryPath: jest.fn(() => null),
       nodeHttpRequest: jest.fn(() => Promise.reject(new Error('ECONNREFUSED'))),
     });
@@ -92,7 +109,6 @@ describe('HarnessAppLauncher', () => {
     await launcher.ensureRunning('http://127.0.0.1:3080', CONFIG);
     expect(launcher.getStatus()).toEqual({ kind: 'failed', reason: 'dsh-not-found' });
 
-    // After the harness becomes reachable, a fresh check clears the failure.
     const { nodeHttpRequest } = jest.requireMock('../../../../src/providers/deepseek/harness/nodeHttp') as {
       nodeHttpRequest: jest.Mock;
     };
@@ -100,5 +116,25 @@ describe('HarnessAppLauncher', () => {
 
     await expect(launcher.check('http://127.0.0.1:3080')).resolves.toBe(true);
     expect(launcher.getStatus()).toEqual({ kind: 'online' });
+  });
+
+  it('injects DSH_PERMISSION_MODE into the launch environment', async () => {
+    const nodeHttpRequest = jest.fn()
+      .mockRejectedValueOnce(new Error('ECONNREFUSED'))
+      .mockResolvedValue({ status: 200 });
+    const { Launcher, spawn } = await loadLauncher({
+      findCliBinaryPath: jest.fn(() => '/usr/bin/dsh'),
+      nodeHttpRequest,
+    });
+    spawn.mockReturnValue(makeChild());
+
+    const launcher = Launcher.get();
+    await expect(launcher.ensureRunning(
+      'http://127.0.0.1:3080',
+      { ...CONFIG, safeMode: 'acceptEdits' },
+    )).resolves.toBe(true);
+
+    const env = spawn.mock.calls[0][2].env as Record<string, string | undefined>;
+    expect(env.DSH_PERMISSION_MODE).toBe('acceptEdits');
   });
 });
