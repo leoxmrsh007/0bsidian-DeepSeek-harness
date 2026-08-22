@@ -38,6 +38,27 @@ export interface DeepSeekProviderSettings {
   dshPath: string;
 }
 
+export const DEFAULT_HARNESS_BASE_URL = 'http://127.0.0.1:3080';
+
+export function normalizeHarnessBaseUrl(value: unknown): string {
+  if (typeof value !== 'string' || !value.trim()) {
+    return DEFAULT_HARNESS_BASE_URL;
+  }
+  try {
+    const url = new URL(value.trim());
+    const host = url.hostname.toLowerCase();
+    if (
+      url.protocol === 'http:'
+      && (host === '127.0.0.1' || host === 'localhost' || host === '[::1]')
+    ) {
+      return url.toString().replace(/\/+$/, '');
+    }
+  } catch {
+    // Fall through to the safe loopback default.
+  }
+  return DEFAULT_HARNESS_BASE_URL;
+}
+
 export const DEFAULT_DEEPSEEK_PROVIDER_SETTINGS: Readonly<DeepSeekProviderSettings> = Object.freeze({
   enabled: false,
   safeMode: 'acceptEdits',
@@ -53,7 +74,7 @@ export const DEFAULT_DEEPSEEK_PROVIDER_SETTINGS: Readonly<DeepSeekProviderSettin
   titleModelEnvironmentType: '',
   environmentVariables: '',
   environmentHash: '',
-  harnessBaseUrl: 'http://127.0.0.1:3080',
+  harnessBaseUrl: DEFAULT_HARNESS_BASE_URL,
   autoLaunch: true,
   dshPath: '',
 });
@@ -139,10 +160,7 @@ export function getDeepSeekProviderSettings(
       config.environmentHash,
       DEFAULT_DEEPSEEK_PROVIDER_SETTINGS.environmentHash,
     ),
-    harnessBaseUrl: readStoredString(
-      config.harnessBaseUrl,
-      DEFAULT_DEEPSEEK_PROVIDER_SETTINGS.harnessBaseUrl,
-    ),
+    harnessBaseUrl: normalizeHarnessBaseUrl(config.harnessBaseUrl),
     autoLaunch: readStoredBoolean(
       config.autoLaunch,
       DEFAULT_DEEPSEEK_PROVIDER_SETTINGS.autoLaunch,
@@ -173,6 +191,9 @@ export function updateDeepSeekProviderSettings(
     safeMode: 'safeMode' in updates
       ? normalizeDeepSeekSafeMode(updates.safeMode) ?? current.safeMode
       : current.safeMode,
+    harnessBaseUrl: 'harnessBaseUrl' in updates
+      ? normalizeHarnessBaseUrl(updates.harnessBaseUrl)
+      : current.harnessBaseUrl,
   };
   setProviderConfig(settings, 'deepseek', next);
   return next;

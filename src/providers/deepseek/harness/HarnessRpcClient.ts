@@ -216,6 +216,9 @@ export class HarnessRpcClient {
       throw new Error(`RPC HTTP ${status} for ${method}`);
     }
     const body = JSON.parse(await text()) as RpcResponse<T>;
+    if (body.type !== 'server-response' || body.rpcId !== rpcId || !body.result) {
+      throw new Error(`Invalid RPC response for ${method}`);
+    }
     if (!body.result.ok) {
       const err = body.result.error;
       throw new Error(

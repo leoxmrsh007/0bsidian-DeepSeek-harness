@@ -1,5 +1,8 @@
 import { BUILT_IN_PROVIDER_MODULES } from '@/providers';
-import { getDeepSeekProviderSettings } from '@/providers/deepseek/settings';
+import {
+  getDeepSeekProviderSettings,
+  normalizeHarnessBaseUrl,
+} from '@/providers/deepseek/settings';
 import { getBuiltInProviderDefaultConfigs } from '@/providers/defaultProviderConfigs';
 
 function getProviderConfig(
@@ -69,6 +72,13 @@ describe('built-in ProviderModule catalog', () => {
       harnessBaseUrl: expect.any(String),
       safeMode: 'default',
     });
+  });
+
+  it('accepts only loopback DeepSeek Harness endpoints', () => {
+    expect(normalizeHarnessBaseUrl('http://127.0.0.1:3080')).toBe('http://127.0.0.1:3080');
+    expect(normalizeHarnessBaseUrl('http://localhost:3080/')).toBe('http://localhost:3080');
+    expect(normalizeHarnessBaseUrl('https://example.com')).toBe('http://127.0.0.1:3080');
+    expect(normalizeHarnessBaseUrl('http://192.168.1.10:3080')).toBe('http://127.0.0.1:3080');
   });
 
   it('does not report canonical provider defaults as changed', () => {

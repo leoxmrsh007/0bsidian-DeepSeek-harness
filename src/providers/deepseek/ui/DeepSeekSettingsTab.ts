@@ -64,7 +64,7 @@ export const deepseekSettingsTabRenderer: ProviderSettingsTabRenderer = {
 
     new Setting(container)
       .setName('DeepSeek Harness URL')
-      .setDesc('Local HTTP endpoint of the DeepSeek Harness desktop app (dsh web).')
+      .setDesc('Loopback-only HTTP endpoint of the DeepSeek Harness desktop app (dsh web). Remote endpoints are blocked.')
       .addText((text) => {
         text
           // eslint-disable-next-line obsidianmd/ui/sentence-case -- URL placeholder
