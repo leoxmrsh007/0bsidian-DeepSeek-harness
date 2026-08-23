@@ -7,6 +7,8 @@ import './providers';
 
 StartupProfiler.finishModuleEvaluation();
 
+import * as nodePath from 'node:path';
+
 import type { Editor, TAbstractFile, WorkspaceLeaf } from 'obsidian';
 import { MarkdownView, Notice, Plugin, TFolder } from 'obsidian';
 
@@ -67,6 +69,7 @@ import {
 import { registerFileMenu } from './features/chat/fileMenu';
 import { type InlineEditContext, InlineEditModal } from './features/inline-edit/ui/InlineEditModal';
 import { DeepSeekHarnessSettingTab } from './features/settings/DeepSeekHarnessSettings';
+import { VaultApiBridge } from './features/vaultApi/VaultApiBridge';
 import { setLocale } from './i18n/i18n';
 import type { Locale } from './i18n/types';
 import { buildCursorContext } from './utils/editor';
@@ -130,6 +133,11 @@ export default class DeepSeekHarnessPlugin extends Plugin {
   readonly warmExecutionPool = new WarmExecutionPool(
     () => this.settings?.maxWarmAgentProcesses ?? DEFAULT_MAX_WARM_AGENT_PROCESSES,
   );
+  private vaultApiBridgeInternal: VaultApiBridge | null = null;
+
+  get vaultApiBridge(): VaultApiBridge | null {
+    return this.vaultApiBridgeInternal;
+  }
   private settingsCoordinator!: SettingsCoordinator<DeepSeekHarnessSettings>;
   private chatModelSelectionCoordinator!: ChatModelSelectionCoordinator;
   private pinnedLinkedNotePaths!: PinnedLinkedNotePathCoordinator;
@@ -305,14 +313,48 @@ export default class DeepSeekHarnessPlugin extends Plugin {
       });
 
       this.addSettingTab(new DeepSeekHarnessSettingTab(this.app, this));
+      void this.initializeVaultApiBridge();
       this.scheduleRemainingSessionMetadataLoad();
     } finally {
       StartupProfiler.finishOnload();
     }
   }
 
+  getVaultApiBridge(): VaultApiBridge | null {
+    return this.vaultApiBridgeInternal;
+  }
+
+  private async initializeVaultApiBridge(): Promise<void> {
+    try {
+      const adapter = this.app.vault.adapter;
+      if (typeof (adapter as { getBasePath?: unknown }).getBasePath !== 'function') {
+        return; // Mobile or non-desktop adapter: bridge is desktop-only.
+      }
+      const vaultBasePath = (adapter as unknown as { getBasePath(): string }).getBasePath();
+      const pluginDir = nodePath.join(
+        vaultBasePath,
+        this.app.vault.configDir,
+        'plugins',
+        this.manifest.id,
+      );
+      const bridge = new VaultApiBridge({
+        app: this.app,
+        pluginDir,
+        vaultBasePath,
+        loadData: () => this.loadData(),
+        saveData: (data) => this.saveData(data),
+      });
+      this.vaultApiBridgeInternal = bridge;
+      await bridge.start();
+    } catch {
+      this.vaultApiBridgeInternal = null;
+    }
+  }
+
   onunload(): void {
     this.isUnloading = true;
+    void this.vaultApiBridgeInternal?.stop();
+    this.vaultApiBridgeInternal = null;
     if (this.sessionMetadataLoadTimer !== null) {
       window.clearTimeout(this.sessionMetadataLoadTimer);
       this.sessionMetadataLoadTimer = null;

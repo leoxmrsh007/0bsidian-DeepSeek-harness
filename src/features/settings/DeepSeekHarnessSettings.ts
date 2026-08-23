@@ -620,6 +620,91 @@ export class DeepSeekHarnessSettingTab extends PluginSettingTab {
       placeholder: 'PATH=/opt/homebrew/bin:/usr/local/bin\nHTTPS_PROXY=http://proxy.example.com:8080\nSSL_CERT_FILE=/path/to/cert.pem',
     });
 
+    // --- Vault API bridge (DSH ↔ Obsidian) ---
+
+    new Setting(container).setName('Vault API bridge (DSH ↔ Obsidian)').setHeading();
+
+    const bridge = this.plugin.vaultApiBridge;
+    const status = bridge?.getStatus();
+
+    new Setting(container)
+      .setName('Bridge status')
+      .setDesc(
+        status?.running
+          ? `Running at http://127.0.0.1:${status.port} (read-only, loopback only).`
+          : status?.error
+            ? `Stopped: ${status.error}`
+            : 'Stopped. Enable the bridge to let DSH read vault notes.',
+      );
+
+    new Setting(container)
+      .setName('Enable bridge')
+      .setDesc('Allow a DSH-side client to read notes, search, backlinks, tags, and frontmatter from this vault over the loopback interface. Writes are not exposed in this version.')
+      .addToggle((toggle) => {
+        toggle
+          .setValue(status?.enabled ?? false)
+          .onChange(async (value) => {
+            if (!bridge) {
+              new Notice('The vault API bridge is unavailable on this device.');
+              toggle.setValue(false);
+              return;
+            }
+            await bridge.setEnabled(value);
+            this.display();
+          });
+      });
+
+    new Setting(container)
+      .setName('Port')
+      .setDesc('Loopback port the bridge listens on. Defaults to 3081.')
+      .addText((text) => {
+        text
+          .setPlaceholder('3081')
+          .setValue(String(status?.port ?? 3081))
+          .onChange(async (value) => {
+            const parsed = Number.parseInt(value.trim(), 10);
+            if (!bridge || !Number.isInteger(parsed) || parsed < 1024 || parsed > 65535) {
+              return;
+            }
+            await bridge.setPort(parsed);
+            this.display();
+          });
+      });
+
+    new Setting(container)
+      .setName('Install DSH bridge')
+      .setDesc('Write the read-only MCP proxy into the plugin folder and copy the DSH .cordis.yml overlay to the clipboard. Save the snippet as <dsh-config-dir>/obsidian-vault-bridge.cordis.yml and restart DSH.')
+      .addButton((button) => {
+        button
+          .setButtonText('Write script & copy config')
+          .onClick(async () => {
+            if (!bridge) {
+              new Notice('The vault API bridge is unavailable on this device.');
+              return;
+            }
+            bridge.writeBridgeScript();
+            const snippet = bridge.renderDshConfig();
+            await navigator.clipboard.writeText(snippet);
+            new Notice('Bridge script written and DSH config copied to clipboard.');
+          });
+      });
+
+    new Setting(container)
+      .setName('Rotate token')
+      .setDesc('Regenerate the bridge token. DSH connections using the old token stop working until the config is updated.')
+      .addButton((button) => {
+        button
+          .setButtonText('Rotate')
+          .onClick(async () => {
+            if (!bridge) {
+              new Notice('The vault API bridge is unavailable on this device.');
+              return;
+            }
+            await bridge.rotateToken();
+            new Notice('Bridge token rotated.');
+          });
+      });
+
     // --- Advanced ---
 
     new Setting(container).setName(t('common.advanced')).setHeading();

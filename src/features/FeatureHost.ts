@@ -12,6 +12,7 @@ import type {
 import type { ChatExecutionPersistence } from './chat/execution/ChatExecutionCoordinator';
 import type { WarmExecutionPool } from './chat/execution/WarmExecutionPool';
 import type { AssembledTabRuntime, TabId, TabManagerViewHost } from './chat/tabs/types';
+import type { VaultApiBridge } from './vaultApi/VaultApiBridge';
 
 export interface FeatureTabManagerHost {
   canCreateTab(): boolean;
@@ -52,6 +53,7 @@ export interface FeatureHost {
   readonly settings: DeepSeekHarnessSettings;
   readonly storage: SharedAppStorage;
   readonly warmExecutionPool: WarmExecutionPool;
+  readonly vaultApiBridge: VaultApiBridge | null;
 
   mutateSettings(
     mutation: (settings: DeepSeekHarnessSettings) => void | Promise<void>,
