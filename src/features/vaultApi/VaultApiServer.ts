@@ -13,6 +13,7 @@
 
 import * as http from 'node:http';
 
+import { randomUUID } from 'crypto';
 import type { App } from 'obsidian';
 
 import { DEFAULT_VAULT_API_PORT } from './settings';
@@ -23,15 +24,59 @@ import { VaultApiHandlers } from './VaultApiHandlers';
 const MAX_REQUEST_BODY_BYTES = 8 * 1024 * 1024;
 const TOKEN_HEADER = 'x-dsh-vault-token';
 
+/** Write methods must pass the in-Obsidian confirmation gate. */
+const MUTATION_METHODS = new Set([
+  'vault.write',
+  'vault.append',
+  'vault.delete',
+  'vault.move',
+  'vault.frontmatter.set',
+  'vault.frontmatter.delete',
+]);
+
+export interface PendingWriteRequest {
+  readonly confirmId: string;
+  readonly method: string;
+  readonly path: string;
+  readonly preview: string;
+  readonly rpcId: string;
+}
+
 export interface VaultApiServerOptions {
   readonly port: number;
   readonly token: string;
   readonly app: App;
+  /** When false, mutation methods are rejected before reaching the confirm gate. */
+  readonly writesEnabled: boolean;
+  /** Called once per mutation that reaches the confirmation gate. */
+  onWriteRequest?: (request: PendingWriteRequest) => void;
 }
 
 export interface VaultApiServerHandle {
   readonly port: number;
   close(): Promise<void>;
+  /** Approve or reject a pending write; resolves with the mutation result. */
+  confirm(confirmId: string, approved: boolean): Promise<unknown>;
+}
+
+function summarizeMutation(method: string, payload: Record<string, unknown>): string {
+  const path = typeof payload.path === 'string' ? payload.path : '';
+  switch (method) {
+    case 'vault.write':
+    case 'vault.append': {
+      const content = typeof payload.content === 'string' ? payload.content : '';
+      const preview = content.length > 400 ? `${content.slice(0, 400)}…` : content;
+      return `${path} (${content.length} chars)\n\n${preview}`;
+    }
+    case 'vault.move':
+      return `${path} → ${String(payload.to ?? '')}`;
+    case 'vault.frontmatter.set':
+    case 'vault.frontmatter.delete':
+      return `${path} frontmatter.${String(payload.key ?? '')}`;
+    case 'vault.delete':
+    default:
+      return path;
+  }
 }
 
 function timingSafeEqual(left: string, right: string): boolean {
@@ -84,11 +129,33 @@ export function startVaultApiServer(
   options: VaultApiServerOptions,
 ): Promise<VaultApiServerHandle> {
   const handlers = new VaultApiHandlers(options.app);
+  const pendingWrites = new Map<string, { method: string; payload: Record<string, unknown> }>();
   const port = options.port === 0 ? 0 : options.port;
 
   const server = http.createServer((req, res) => {
     void handleRequest(req, res);
   });
+
+  async function confirmPending(
+    confirmId: string,
+    approved: boolean,
+  ): Promise<{ ok: boolean; value?: unknown; error?: { code: string; message: string } }> {
+    const pending = pendingWrites.get(confirmId);
+    if (!pending) {
+      return {
+        ok: false,
+        error: { code: 'confirm-not-found', message: `unknown confirmation: ${confirmId}` },
+      };
+    }
+    pendingWrites.delete(confirmId);
+    if (!approved) {
+      return { ok: true, value: { approved: false } };
+    }
+    const result = await handlers.dispatch(pending.method, pending.payload);
+    return result.ok
+      ? { ok: true, value: { approved: true, result: result.value } }
+      : { ok: false, error: result.error };
+  }
 
   async function handleRequest(
     req: http.IncomingMessage,
@@ -135,6 +202,62 @@ export function startVaultApiServer(
       return;
     }
 
+    if (envelope.method === 'vault.confirm') {
+      const confirmId = typeof envelope.payload.confirmId === 'string' ? envelope.payload.confirmId : '';
+      const approved = envelope.payload.approved === true;
+      const outcome = await confirmPending(confirmId, approved);
+      sendJson(res, 200, {
+        type: 'server-response',
+        rpcId: envelope.rpcId,
+        result: outcome.ok
+          ? { ok: true, value: outcome.value }
+          : { ok: false, error: outcome.error ?? { code: 'unknown', message: 'unknown error' } },
+      });
+      return;
+    }
+
+    if (MUTATION_METHODS.has(envelope.method)) {
+      if (!options.writesEnabled) {
+        sendJson(res, 200, {
+          type: 'server-response',
+          rpcId: envelope.rpcId,
+          result: {
+            ok: false,
+            error: { code: 'writes-disabled', message: 'write bridge is disabled in plugin settings' },
+          },
+        });
+        return;
+      }
+      const confirmId = randomUUID();
+      const preview = summarizeMutation(envelope.method, envelope.payload);
+      const vaultPath = typeof envelope.payload.path === 'string' ? envelope.payload.path : '';
+      pendingWrites.set(confirmId, {
+        method: envelope.method,
+        payload: envelope.payload,
+      });
+      options.onWriteRequest?.({
+        confirmId,
+        method: envelope.method,
+        path: vaultPath,
+        preview,
+        rpcId: envelope.rpcId,
+      });
+      sendJson(res, 200, {
+        type: 'server-response',
+        rpcId: envelope.rpcId,
+        result: {
+          ok: false,
+          error: {
+            code: 'pending-confirmation',
+            message: 'write requires confirmation in Obsidian',
+            confirmId,
+            preview,
+          },
+        },
+      });
+      return;
+    }
+
     const result = await handlers.dispatch(envelope.method, envelope.payload);
     const response: VaultApiResponse = {
       type: 'server-response',
@@ -162,6 +285,7 @@ export function startVaultApiServer(
       resolve({
         port: boundPort,
         close: () => new Promise<void>((closeResolve) => server.close(() => closeResolve())),
+        confirm: (confirmId, approved) => confirmPending(confirmId, approved),
       });
     });
   });

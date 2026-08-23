@@ -22,6 +22,7 @@ import {
   normalizeVaultApiSettings,
   type VaultApiSettings,
 } from './settings';
+import { VaultApiConfirmModal } from './VaultApiConfirmModal';
 import { startVaultApiServer, type VaultApiServerHandle } from './VaultApiServer';
 
 const DATA_KEY = 'vaultApi';
@@ -31,6 +32,7 @@ export interface VaultApiBridgeStatus {
   readonly running: boolean;
   readonly port: number;
   readonly token: string;
+  readonly writesEnabled: boolean;
   readonly url: string | null;
   readonly error?: string;
 }
@@ -60,6 +62,7 @@ export class VaultApiBridge {
       running: this.handle !== null,
       port: this.handle?.port ?? this.settings.port,
       token: this.settings.token,
+      writesEnabled: this.settings.writesEnabled,
       url: this.handle ? `http://127.0.0.1:${this.handle.port}` : null,
       error: this.error ?? undefined,
     };
@@ -111,8 +114,17 @@ export class VaultApiBridge {
       enabled: this.settings.enabled,
       port,
       token: this.settings.token,
+      writesEnabled: this.settings.writesEnabled,
     });
     this.settings = { ...this.settings, port: normalized.port };
+    await this.persist();
+    if (this.settings.enabled) {
+      await this.restart();
+    }
+  }
+
+  async setWritesEnabled(writesEnabled: boolean): Promise<void> {
+    this.settings = { ...this.settings, writesEnabled };
     await this.persist();
     if (this.settings.enabled) {
       await this.restart();
@@ -126,6 +138,14 @@ export class VaultApiBridge {
     if (this.settings.enabled) {
       await this.restart();
     }
+  }
+
+  /** Confirm (approve/reject) a pending bridge write. */
+  async confirm(confirmId: string, approved: boolean): Promise<unknown> {
+    return this.handle?.confirm(confirmId, approved) ?? {
+      ok: false,
+      error: { code: 'server-not-running', message: 'bridge server is not running' },
+    };
   }
 
   /** Write the self-contained stdio proxy into the plugin directory. */
@@ -164,6 +184,11 @@ export class VaultApiBridge {
         app: this.options.app,
         port: this.settings.port,
         token: this.settings.token,
+        writesEnabled: this.settings.writesEnabled,
+        onWriteRequest: (request) => {
+          const modal = new VaultApiConfirmModal(this.options.app, request, this);
+          modal.open();
+        },
       });
       this.handle = handle;
     } catch (error) {

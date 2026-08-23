@@ -38,12 +38,14 @@ describe('MCP bridge script source', () => {
     }
   });
 
-  it('exposes only read-only tools in 0.2.0', () => {
+  it('exposes read-only and confirmed-write tools', () => {
     expect(MCP_BRIDGE_SCRIPT_SOURCE).toContain('vault_read');
     expect(MCP_BRIDGE_SCRIPT_SOURCE).toContain('vault_frontmatter_get');
-    // Write tools must not appear in the read-only bridge surface.
-    expect(MCP_BRIDGE_SCRIPT_SOURCE).not.toContain('vault_write');
-    expect(MCP_BRIDGE_SCRIPT_SOURCE).not.toContain('vault_delete');
+    // Write tools are exposed, but every write path surfaces the confirmation gate.
+    expect(MCP_BRIDGE_SCRIPT_SOURCE).toContain('vault_write');
+    expect(MCP_BRIDGE_SCRIPT_SOURCE).toContain('vault_delete');
+    expect(MCP_BRIDGE_SCRIPT_SOURCE).toContain('pending-confirmation');
+    expect(MCP_BRIDGE_SCRIPT_SOURCE).toContain('awaiting your approval inside Obsidian');
   });
 });
 

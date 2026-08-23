@@ -655,6 +655,26 @@ export class DeepSeekHarnessSettingTab extends PluginSettingTab {
       });
 
     new Setting(container)
+      .setName('Enable write bridge')
+      .setDesc('Allow DSH to write, append, delete, move, and edit frontmatter — every write opens a confirmation dialog in Obsidian before it is applied. Off by default.')
+      .addToggle((toggle) => {
+        toggle
+          .setValue(status?.writesEnabled ?? false)
+          .onChange(async (value) => {
+            if (!bridge) {
+              new Notice('The vault API bridge is unavailable on this device.');
+              toggle.setValue(false);
+              return;
+            }
+            await bridge.setWritesEnabled(value);
+            new Notice(value
+              ? 'Write bridge enabled: DSH writes now require confirmation in Obsidian.'
+              : 'Write bridge disabled.');
+            this.display();
+          });
+      });
+
+    new Setting(container)
       .setName('Port')
       .setDesc('Loopback port the bridge listens on. Defaults to 3081.')
       .addText((text) => {

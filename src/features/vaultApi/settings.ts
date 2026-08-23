@@ -13,6 +13,8 @@ export interface VaultApiSettings {
   readonly enabled: boolean;
   readonly port: number;
   readonly token: string;
+  /** Allow mutation methods through the in-Obsidian confirmation gate. */
+  readonly writesEnabled: boolean;
 }
 
 export const DEFAULT_VAULT_API_PORT = 3081;
@@ -44,6 +46,7 @@ export const DEFAULT_VAULT_API_SETTINGS: Readonly<VaultApiSettings> = Object.fre
   enabled: false,
   port: DEFAULT_VAULT_API_PORT,
   token: '',
+  writesEnabled: false,
 });
 
 export function normalizeVaultApiSettings(value: unknown): VaultApiSettings {
@@ -52,9 +55,10 @@ export function normalizeVaultApiSettings(value: unknown): VaultApiSettings {
   }
   const record = value as Record<string, unknown>;
   const enabled = record.enabled === true;
+  const writesEnabled = record.writesEnabled === true;
   const port = normalizeVaultApiPort(record.port);
   const token = typeof record.token === 'string' && record.token.length >= 32
     ? record.token
     : generateVaultApiToken();
-  return { enabled, port, token };
+  return { enabled, port, token, writesEnabled };
 }

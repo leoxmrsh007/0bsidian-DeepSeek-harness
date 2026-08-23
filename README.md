@@ -31,13 +31,15 @@ Streaming text, reasoning, and tool activity all render inside Obsidian.
 
 DeepSeek Vault Harness 让你直接在 Obsidian 侧边栏中使用 DeepSeek Harness、Claude Code 或 Codex。AI Agent 以当前 vault 为工作目录，可读取和编辑笔记、搜索文件、执行 Bash 命令并完成多步骤任务。
 
-### DSH ↔ Obsidian 只读桥接（vault API bridge）
+### DSH ↔ Obsidian 桥接（vault API bridge）
 
-从 0.2.0 开始，插件可反向把 vault 的结构化能力暴露给 DSH：启用 **Vault API bridge** 后，DSH 可以通过 MCP 调用 `vault_read`、`vault_search`、`vault_backlinks`、`vault_tags`、`vault_frontmatter_get` 等只读工具，直接读取笔记、反链和标签。
+插件可反向把 vault 的结构化能力暴露给 DSH：启用 **Vault API bridge** 后，DSH 可以通过 MCP 调用 `vault_read`、`vault_search`、`vault_backlinks`、`vault_tags`、`vault_frontmatter_get` 等只读工具，直接读取笔记、反链和标签。
+
+从 0.3.0 起，还可启用**写桥**：`vault_write`、`vault_append`、`vault_delete`、`vault_move`、`vault_frontmatter_set`、`vault_frontmatter_delete`。每次写操作都会在 Obsidian 内弹出确认对话框（含预览），批准后才会真正写入；拒绝则丢弃。
 
 - 仅监听 `127.0.0.1` 回环地址，随机/可配置端口；
 - 每次启用会生成随机 token，请求必须携带 `X-DSH-Vault-Token`；
-- 首版只读：写入、删除、重命名等写操作留待 0.3.0 并强制确认；
+- 写桥默认关闭，需在设置中显式开启，且每一笔写都必须确认；
 - 在插件设置 → **Vault API bridge** 中启用，点 **Write script & copy config** 会生成 DSH 侧的 `.cordis.yml` MCP 配置，保存到 DSH 配置目录并重启 DSH 即可。
 
 ### 中文安装与使用
