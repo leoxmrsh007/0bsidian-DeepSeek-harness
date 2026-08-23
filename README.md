@@ -49,6 +49,8 @@ DeepSeek Vault Harness 让你直接在 Obsidian 侧边栏中使用 DeepSeek Harn
 3. DeepSeek 需要本地安装并启动 `dsh web`，或保持自动启动开启；Claude 需要已登录的 `claude` CLI；Codex 需要登录 Codex app 或 app-server。
 4. 点击左侧机器人图标，或执行 **Open chat view** 命令，即可开始对话。
 
+完整桥接使用步骤见 [Vault API bridge 操作指南](docs/vault-bridge-guide.md)（[English](docs/vault-bridge-guide.en.md)）。
+
 ## Install
 
 ### From GitHub Release (recommended)
@@ -87,6 +89,8 @@ path in the provider settings (GUI-launched Obsidian may not see npm global shim
 
 - [DeepSeek Harness integration](docs/deepseek-harness-integration.md) —
   architecture, HTTP API, event mapping, and status.
+- [Vault API bridge 操作指南](docs/vault-bridge-guide.md) — DSH ↔ Obsidian 双向桥接使用手册（中文）。
+- [Vault API bridge guide (EN)](docs/vault-bridge-guide.en.md) — the DSH ↔ Obsidian bridge user manual.
 
 ## License
 
