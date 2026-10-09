@@ -2,7 +2,6 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 import type { ProviderUIOption } from '../../../core/providers/types';
-
 import { resolveClaudeConfigDir } from '../config/ClaudeConfigDir';
 
 interface ClaudeCliModelPickerOption {

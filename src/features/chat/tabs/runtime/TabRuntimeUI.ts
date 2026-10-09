@@ -1,5 +1,3 @@
-import { Notice } from 'obsidian';
-
 import {
   getProviderSettingsSnapshotWithModel,
   normalizeProviderModelSelection,
@@ -38,6 +36,7 @@ import {
   getTabHiddenCommands,
   getTabSelectedModel,
   getTabSettingsSnapshot,
+  initializeTabExecution,
   refreshTabProviderUI,
   syncSlashCommandDropdownForProvider,
   syncTabProviderServices,
@@ -325,25 +324,32 @@ function buildInputToolbar(
       );
       if (!isSelectionTargetCurrent()) return;
 
-      // 关键 commit 用目标 provider 落进 chatModelSelection, 保证之后其它监听者拿到
-      // 正确的 provider。
+      // 会话记录才是发送路由的权威来源(getTabProviderId 优先读 conversation.providerId,
+      // 执行层按它选后端),所以跨 provider 时把 providerId 一起写回,再重绑执行层。
+      const providerChanged = targetProvider !== tab.providerId;
+      await plugin.updateConversation(conversationId, {
+        ...(providerChanged ? { providerId: targetProvider } : {}),
+        selectedModel: normalizedModel,
+      });
+      if (!isSelectionTargetCurrent()) return;
+
+      shell.providerId = targetProvider;
+      if (providerChanged) {
+        await initializeTabExecution(tab, plugin);
+        if (!isSelectionTargetCurrent()) return;
+        await options.onProviderChanged?.(tab, targetProvider);
+        syncSlashCommandDropdownForProvider(tab, plugin, shell.providerCatalogResolver);
+        refreshTabProviderUI(tab, plugin);
+        applyProviderUIGating(tab, plugin);
+      }
+
+      onUserModified();
       const didCommit = await plugin.chatModelSelection.commitIntent(
         selectionIntent,
         { providerId: targetProvider, model: normalizedModel },
         isSelectionTargetCurrent,
       );
       if (!didCommit || !isSelectionTargetCurrent()) return;
-
-      // shell 层的 providerId 同步,这样后续 onPrompt / getTabChatUIConfig(
-      // 别处仍沿用旧 API 的路径) 也能拿到新 provider。
-      shell.providerId = targetProvider;
-
-      await plugin.updateConversation(conversationId, {
-        selectedModel: normalizedModel,
-      });
-      if (!isSelectionTargetCurrent()) return;
-
-      onUserModified();
 
       await uiConfig.prepareModelMetadata?.(
         normalizedModel,
