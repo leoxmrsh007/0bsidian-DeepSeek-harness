@@ -1,5 +1,6 @@
 import { getRuntimeEnvironmentVariables } from '../../core/providers/providerEnvironment';
 import type { ProviderUIOption } from '../../core/providers/types';
+import { getClaudeCliModelPickerOptions } from './cli/claudeModelPicker';
 import {
   type ClaudeModelEnvType,
   getModelsFromEnvironment,
@@ -82,6 +83,24 @@ export function getClaudeModelOptions(settings: Record<string, unknown>): Claude
       value: encodeClaudeModelSelectionId(modelId),
       label: customModelAliases[modelId] ?? formatCustomModelLabel(modelId),
       description: 'Custom model',
+    });
+  }
+
+  // v0.3.0-patch1: fold in `modelPicker.options` from the Claude Code CLI's
+  // settings.json so custom-gateway models (e.g. `nairos/nairos-pro` behind
+  // magpie) appear here too. Skip entries whose runtime id is already listed.
+  for (const cliOption of getClaudeCliModelPickerOptions()) {
+    const modelId = toClaudeRuntimeModelId(cliOption.value);
+    const normalizedModelId = normalizeLegacyClaudeModelAlias(modelId);
+    if (seenModelIds.has(normalizedModelId)) {
+      continue;
+    }
+
+    seenModelIds.add(normalizedModelId);
+    models.push({
+      value: encodeClaudeModelSelectionId(cliOption.value),
+      label: cliOption.label ?? formatCustomModelLabel(cliOption.value),
+      description: cliOption.description ?? 'Claude CLI modelPicker option',
     });
   }
 

@@ -197,7 +197,9 @@ function buildInputToolbar(
 
   const inputToolbar = dom.inputWrapper.createDiv({ cls: 'claudian-input-toolbar' });
 
-  const blankTabUIConfigProxy = (): ProviderChatUIConfig => {
+  // v0.3.0-patch1: 同一会话允许切换 provider。全列所有 provider 的模型,提供者归属
+  // 跟随 shell.providerId(由 applyProviderTarget 同步),不再在绑会话里走 getTabChatUIConfig。
+  const universalUIConfigProxy = (): ProviderChatUIConfig => {
     const draftProvider = shell.providerId;
     const baseConfig = ProviderRegistry.getChatUIConfig(draftProvider);
     return {
@@ -240,12 +242,7 @@ function buildInputToolbar(
   });
 
   const toolbarComponents = createInputToolbar(inputToolbar, {
-    getUIConfig: () => {
-      if (shell.conversationId === null) {
-        return blankTabUIConfigProxy();
-      }
-      return getTabChatUIConfig(shell, plugin);
-    },
+    getUIConfig: () => universalUIConfigProxy(),
     getCapabilities: () => getTabCapabilities(shell, plugin),
     getSettings: () => getTabSettingsSnapshot(shell, plugin),
     getEnvironmentVariables: () => plugin.getActiveEnvironmentVariables(),
@@ -300,36 +297,46 @@ function buildInputToolbar(
         return;
       }
 
-      const boundProvider = tab.providerId;
-      const modelProvider = getProviderForModel(model, plugin.settings);
-      if (modelProvider !== boundProvider) {
-        new Notice('Cannot switch provider on a bound session. Start a new conversation instead.');
-        tab.ui.modelSelector.updateDisplay();
-        return;
-      }
+      // v0.3.0-patch1: 同一会话允许切换 provider。由所选模型的 getProviderForModel
+      // 直接作为目标 provider,不再强制等于 tab.providerId(旧 bound 守卫已删),
+      // 并同步 shell.providerId,让其它(tab 级渲染/pertial settings/后续消息)
+      // 都跟着走新 provider。
+      const targetProvider = getProviderForModel(model, plugin.settings);
       const selectionIntent = plugin.chatModelSelection.beginIntent();
       const request = modelSelection.beginRequest();
       const conversationId = tab.conversationId;
 
-      const uiConfig: ProviderChatUIConfig = getTabChatUIConfig(tab, plugin);
+      const uiConfig: ProviderChatUIConfig = ProviderRegistry.getChatUIConfig(targetProvider);
       const normalizedModel = normalizeProviderModelSelection(
-        boundProvider,
+        targetProvider,
         plugin.settings,
         model,
       ) ?? model;
       const providerSettings = getProviderSettingsSnapshotWithModel(
         plugin.settings,
-        boundProvider,
+        targetProvider,
         normalizedModel,
       ) as TabProviderSettings;
 
       const isSelectionTargetCurrent = (): boolean => (
         options.isRuntimeLive(tab)
         && tab.conversationId === conversationId
-        && tab.providerId === boundProvider
         && modelSelection.isCurrent(request)
       );
       if (!isSelectionTargetCurrent()) return;
+
+      // 关键 commit 用目标 provider 落进 chatModelSelection, 保证之后其它监听者拿到
+      // 正确的 provider。
+      const didCommit = await plugin.chatModelSelection.commitIntent(
+        selectionIntent,
+        { providerId: targetProvider, model: normalizedModel },
+        isSelectionTargetCurrent,
+      );
+      if (!didCommit || !isSelectionTargetCurrent()) return;
+
+      // shell 层的 providerId 同步,这样后续 onPrompt / getTabChatUIConfig(
+      // 别处仍沿用旧 API 的路径) 也能拿到新 provider。
+      shell.providerId = targetProvider;
 
       await plugin.updateConversation(conversationId, {
         selectedModel: normalizedModel,
@@ -337,12 +344,6 @@ function buildInputToolbar(
       if (!isSelectionTargetCurrent()) return;
 
       onUserModified();
-      const didCommit = await plugin.chatModelSelection.commitIntent(
-        selectionIntent,
-        { providerId: boundProvider, model: normalizedModel },
-        isSelectionTargetCurrent,
-      );
-      if (!didCommit || !isSelectionTargetCurrent()) return;
 
       await uiConfig.prepareModelMetadata?.(
         normalizedModel,
