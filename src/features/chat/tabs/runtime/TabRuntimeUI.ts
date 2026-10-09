@@ -1,5 +1,3 @@
-import { Notice } from 'obsidian';
-
 import {
   getProviderSettingsSnapshotWithModel,
   normalizeProviderModelSelection,
@@ -38,6 +36,7 @@ import {
   getTabHiddenCommands,
   getTabSelectedModel,
   getTabSettingsSnapshot,
+  initializeTabExecution,
   refreshTabProviderUI,
   syncSlashCommandDropdownForProvider,
   syncTabProviderServices,
@@ -197,7 +196,9 @@ function buildInputToolbar(
 
   const inputToolbar = dom.inputWrapper.createDiv({ cls: 'claudian-input-toolbar' });
 
-  const blankTabUIConfigProxy = (): ProviderChatUIConfig => {
+  // v0.3.0-patch1: 同一会话允许切换 provider。全列所有 provider 的模型,提供者归属
+  // 跟随 shell.providerId(由 applyProviderTarget 同步),不再在绑会话里走 getTabChatUIConfig。
+  const universalUIConfigProxy = (): ProviderChatUIConfig => {
     const draftProvider = shell.providerId;
     const baseConfig = ProviderRegistry.getChatUIConfig(draftProvider);
     return {
@@ -240,12 +241,7 @@ function buildInputToolbar(
   });
 
   const toolbarComponents = createInputToolbar(inputToolbar, {
-    getUIConfig: () => {
-      if (shell.conversationId === null) {
-        return blankTabUIConfigProxy();
-      }
-      return getTabChatUIConfig(shell, plugin);
-    },
+    getUIConfig: () => universalUIConfigProxy(),
     getCapabilities: () => getTabCapabilities(shell, plugin),
     getSettings: () => getTabSettingsSnapshot(shell, plugin),
     getEnvironmentVariables: () => plugin.getActiveEnvironmentVariables(),
@@ -300,46 +296,57 @@ function buildInputToolbar(
         return;
       }
 
-      const boundProvider = tab.providerId;
-      const modelProvider = getProviderForModel(model, plugin.settings);
-      if (modelProvider !== boundProvider) {
-        new Notice('Cannot switch provider on a bound session. Start a new conversation instead.');
-        tab.ui.modelSelector.updateDisplay();
-        return;
-      }
+      // v0.3.0-patch1: 同一会话允许切换 provider。由所选模型的 getProviderForModel
+      // 直接作为目标 provider,不再强制等于 tab.providerId(旧 bound 守卫已删),
+      // 并同步 shell.providerId,让其它(tab 级渲染/pertial settings/后续消息)
+      // 都跟着走新 provider。
+      const targetProvider = getProviderForModel(model, plugin.settings);
       const selectionIntent = plugin.chatModelSelection.beginIntent();
       const request = modelSelection.beginRequest();
       const conversationId = tab.conversationId;
 
-      const uiConfig: ProviderChatUIConfig = getTabChatUIConfig(tab, plugin);
+      const uiConfig: ProviderChatUIConfig = ProviderRegistry.getChatUIConfig(targetProvider);
       const normalizedModel = normalizeProviderModelSelection(
-        boundProvider,
+        targetProvider,
         plugin.settings,
         model,
       ) ?? model;
       const providerSettings = getProviderSettingsSnapshotWithModel(
         plugin.settings,
-        boundProvider,
+        targetProvider,
         normalizedModel,
       ) as TabProviderSettings;
 
       const isSelectionTargetCurrent = (): boolean => (
         options.isRuntimeLive(tab)
         && tab.conversationId === conversationId
-        && tab.providerId === boundProvider
         && modelSelection.isCurrent(request)
       );
       if (!isSelectionTargetCurrent()) return;
 
+      // 会话记录才是发送路由的权威来源(getTabProviderId 优先读 conversation.providerId,
+      // 执行层按它选后端),所以跨 provider 时把 providerId 一起写回,再重绑执行层。
+      const providerChanged = targetProvider !== tab.providerId;
       await plugin.updateConversation(conversationId, {
+        ...(providerChanged ? { providerId: targetProvider } : {}),
         selectedModel: normalizedModel,
       });
       if (!isSelectionTargetCurrent()) return;
 
+      shell.providerId = targetProvider;
+      if (providerChanged) {
+        await initializeTabExecution(tab, plugin);
+        if (!isSelectionTargetCurrent()) return;
+        await options.onProviderChanged?.(tab, targetProvider);
+        syncSlashCommandDropdownForProvider(tab, plugin, shell.providerCatalogResolver);
+        refreshTabProviderUI(tab, plugin);
+        applyProviderUIGating(tab, plugin);
+      }
+
       onUserModified();
       const didCommit = await plugin.chatModelSelection.commitIntent(
         selectionIntent,
-        { providerId: boundProvider, model: normalizedModel },
+        { providerId: targetProvider, model: normalizedModel },
         isSelectionTargetCurrent,
       );
       if (!didCommit || !isSelectionTargetCurrent()) return;

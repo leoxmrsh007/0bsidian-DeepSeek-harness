@@ -406,19 +406,29 @@ export class CodexModelCatalogCoordinator {
       }
       const currentSettings = getCodexProviderSettings(settings);
       const currentModels = currentSettings.discoveredModels;
-      const visibleModels = normalizeCodexVisibleModels(
+      // v0.3.1-patch1: when discoveredModels change, append newly-discovered
+      // models to visibleModels (when not null), so latest models appear in the
+      // picker without requiring the user to clear the visibility list.
+      let mergedVisibleModels = normalizeCodexVisibleModels(
         currentSettings.visibleModels,
         models,
       );
+      if (mergedVisibleModels !== null) {
+        const currentIds = new Set(mergedVisibleModels);
+        const toAppend = models
+          .filter(model => !currentIds.has(model.model))
+          .map(model => model.model);
+        mergedVisibleModels = [...mergedVisibleModels, ...toAppend];
+      }
       const catalogChanged = !sameCatalog(currentModels, models);
-      const visibilityChanged = !sameCatalog(currentSettings.visibleModels, visibleModels);
+      const visibilityChanged = !sameCatalog(currentSettings.visibleModels, mergedVisibleModels);
       const fingerprintChanged = currentSettings.catalogFingerprint !== fingerprint;
       const timestampChanged = currentSettings.catalogTimestamp !== timestamp;
 
       if (catalogChanged || visibilityChanged || fingerprintChanged || timestampChanged) {
         updateCodexProviderSettings(settings, {
           discoveredModels: models,
-          visibleModels,
+          visibleModels: mergedVisibleModels,
           catalogFingerprint: fingerprint,
           catalogTimestamp: timestamp,
         });

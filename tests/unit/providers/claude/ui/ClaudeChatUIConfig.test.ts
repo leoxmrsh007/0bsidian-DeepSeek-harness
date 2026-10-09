@@ -1,7 +1,36 @@
+import { getClaudeCliModelPickerOptions } from '@/providers/claude/cli/claudeModelPicker';
 import { DEFAULT_CLAUDE_PROVIDER_SETTINGS } from '@/providers/claude/settings';
 import { claudeChatUIConfig } from '@/providers/claude/ui/ClaudeChatUIConfig';
 
+// Keep the suite independent of the developer's real ~/.claude/settings.json.
+jest.mock('@/providers/claude/cli/claudeModelPicker', () => ({
+  getClaudeCliModelPickerOptions: jest.fn(() => []),
+}));
+
 describe('claudeChatUIConfig', () => {
+  describe('Claude CLI modelPicker options', () => {
+    afterEach(() => {
+      jest.mocked(getClaudeCliModelPickerOptions).mockReturnValue([]);
+    });
+
+    it('appends CLI modelPicker models once, after built-in and custom models', () => {
+      jest.mocked(getClaudeCliModelPickerOptions).mockReturnValue([
+        { value: 'nairos/nairos-pro', label: 'nairos-pro', description: 'Nairos · via magpie' },
+        { value: 'claude-opus-4-6', label: 'dup', description: 'duplicate of custom model' },
+      ]);
+
+      const options = claudeChatUIConfig.getModelOptions({
+        providerConfigs: { claude: { customModels: 'claude-opus-4-6' } },
+      });
+      const values = options.map(option => option.value);
+
+      expect(values).toContain('claude-code/nairos/nairos-pro');
+      expect(values.filter(value => value.endsWith('claude-opus-4-6'))).toHaveLength(1);
+      expect(values[values.length - 1]).toBe('claude-code/nairos/nairos-pro');
+      expect(options[options.length - 1].label).toBe('nairos-pro');
+    });
+  });
+
   describe('getDefaultModel', () => {
     it('prefers Opus for fresh Claude settings', () => {
       expect(DEFAULT_CLAUDE_PROVIDER_SETTINGS.defaultModel).toBe('opus');

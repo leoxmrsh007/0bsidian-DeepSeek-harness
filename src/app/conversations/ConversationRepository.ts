@@ -516,7 +516,16 @@ export class ConversationRepository {
     if (!conversation) return;
 
     const safeUpdates = { ...updates };
+    // v0.3.1-patch1: an explicit provider change rebinds the conversation. The old
+    // provider's session/resume state cannot be resumed by another backend, so drop it.
+    const nextProviderId = safeUpdates.providerId;
     delete safeUpdates.providerId;
+    if (nextProviderId && nextProviderId !== conversation.providerId) {
+      conversation.providerId = nextProviderId;
+      safeUpdates.sessionId = null;
+      safeUpdates.providerState = undefined;
+      safeUpdates.resumeAtMessageId = undefined;
+    }
     if ('selectedModel' in safeUpdates) {
       const selectedModel = normalizeProviderModelSelection(
         conversation.providerId,
