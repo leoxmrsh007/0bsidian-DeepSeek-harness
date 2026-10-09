@@ -86,17 +86,19 @@ export function getClaudeModelOptions(settings: Record<string, unknown>): Claude
     });
   }
 
-  // v0.3.0-patch1: fold in `modelPicker.options` from the Claude Code CLI's
-  // settings.json so custom-gateway models (e.g. `nairos/nairos-pro` behind
-  // magpie) appear here too. Skip entries whose runtime id is already listed.
+  // v0.3.1-patch1: include EVERY entry from the Claude Code CLI
+  // settings.json `modelPicker.options` in the picker — including specific
+  // versioned models (e.g. claude-sonnet-5-5, nairos/nairos-pro) that are
+  // routable via magpie. Previously only 4 tier names (haiku/sonnet/opus/
+  // fable) could be chosen here; versioned models were silently filtered out.
+  // This preserves the exact value as received so the CLI can route it,
+  // preventing a nairos/claude ID from being rewritten to a local default.
   for (const cliOption of getClaudeCliModelPickerOptions()) {
-    const modelId = toClaudeRuntimeModelId(cliOption.value);
-    const normalizedModelId = normalizeLegacyClaudeModelAlias(modelId);
-    if (seenModelIds.has(normalizedModelId)) {
-      continue;
-    }
+    const runtimeId = toClaudeRuntimeModelId(cliOption.value);
+    const normalizedRuntimeId = normalizeLegacyClaudeModelAlias(runtimeId);
+    if (seenModelIds.has(normalizedRuntimeId)) continue;
 
-    seenModelIds.add(normalizedModelId);
+    seenModelIds.add(normalizedRuntimeId);
     models.push({
       value: encodeClaudeModelSelectionId(cliOption.value),
       label: cliOption.label ?? formatCustomModelLabel(cliOption.value),
